@@ -1,0 +1,3991 @@
+[
+ {
+  "id": "SV8-001",
+  "set": "SV8",
+  "name": "蛋蛋",
+  "officialId": 11181,
+  "cat": "P",
+  "stage": 0,
+  "hp": 50,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "吸取",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10",
+    "text": "將這隻寶可夢恢復「10」HP。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-002",
+  "set": "SV8",
+  "name": "椰蛋樹",
+  "officialId": 11182,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "投球時刻",
+    "cost": [
+     "G"
+    ],
+    "dmg": "60×",
+    "text": "擲與雙方的戰鬥寶可夢身上附加的能量的數量相同次數的硬幣，造成正面出現的次數×60點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "蛋蛋"
+ },
+ {
+  "id": "SV8-003",
+  "set": "SV8",
+  "name": "鐵蟻ex",
+  "officialId": 11183,
+  "cat": "P",
+  "stage": 0,
+  "hp": 190,
+  "type": "G",
+  "abilities": [
+   {
+    "name": "突然削退",
+    "text": "在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將對手的牌庫上方1張卡丟棄。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "復仇粉碎",
+    "cost": [
+     "G",
+     "C",
+     "C"
+    ],
+    "dmg": "120+",
+    "text": "增加對手已經獲得的獎賞卡的張數×30點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 2,
+  "ex": true
+ },
+ {
+  "id": "SV8-004",
+  "set": "SV8",
+  "name": "粉蝶蟲",
+  "officialId": 11184,
+  "cat": "P",
+  "stage": 0,
+  "hp": 40,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "呼朋引伴",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫選擇1張【基礎】寶可夢卡，放置於備戰區。並且重洗牌庫。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-005",
+  "set": "SV8",
+  "name": "粉蝶蛹",
+  "officialId": 11185,
+  "cat": "P",
+  "stage": 1,
+  "hp": 80,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "走來走去",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將這隻寶可夢與備戰寶可夢互換。"
+   },
+   {
+    "name": "撞擊",
+    "cost": [
+     "G"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "粉蝶蟲"
+ },
+ {
+  "id": "SV8-006",
+  "set": "SV8",
+  "name": "彩粉蝶",
+  "officialId": 11186,
+  "cat": "P",
+  "stage": 2,
+  "hp": 120,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "進化粉",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫，選擇自己的所有備戰寶可夢進化而來的卡各1張，放置於各自身上完成進化。並且重洗牌庫。"
+   },
+   {
+    "name": "利刃之風",
+    "cost": [
+     "G"
+    ],
+    "dmg": "90",
+    "text": ""
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "粉蝶蛹"
+ },
+ {
+  "id": "SV8-007",
+  "set": "SV8",
+  "name": "熱辣娃",
+  "officialId": 11187,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "魯莽頭擊",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-008",
+  "set": "SV8",
+  "name": "蟲滾泥",
+  "officialId": 11188,
+  "cat": "P",
+  "stage": 0,
+  "hp": 40,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "呼喚",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫抽出1張卡。"
+   },
+   {
+    "name": "滾動",
+    "cost": [
+     "G"
+    ],
+    "dmg": "10",
+    "text": ""
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-009",
+  "set": "SV8",
+  "name": "蟲甲聖",
+  "officialId": 11189,
+  "cat": "P",
+  "stage": 1,
+  "hp": 70,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "三重抽出",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫抽出3張卡。"
+   },
+   {
+    "name": "絕地反攻",
+    "cost": [
+     "G"
+    ],
+    "dmg": "40+",
+    "text": "若自己的牌庫的剩餘張數為3張以下，則增加200點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "蟲滾泥"
+ },
+ {
+  "id": "SV8-010",
+  "set": "SV8",
+  "name": "古簡蝸",
+  "officialId": 11190,
+  "cat": "P",
+  "stage": 0,
+  "hp": 130,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "貪婪危害",
+    "cost": [
+     "G",
+     "C"
+    ],
+    "dmg": "20",
+    "text": "若自己的牌庫的剩餘張數為3張以下，則對手的2隻備戰寶可夢也各受到120點傷害。[在備戰區不計算弱點・抵抗力。]"
+   },
+   {
+    "name": "捲入鞭打",
+    "cost": [
+     "G",
+     "G",
+     "C"
+    ],
+    "dmg": "130",
+    "text": "將自己的牌庫上方3張卡丟棄。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 3,
+  "ex": false
+ },
+ {
+  "id": "SV8-011",
+  "set": "SV8",
+  "name": "帕底亞 肯泰羅",
+  "officialId": 11191,
+  "cat": "P",
+  "stage": 0,
+  "hp": 130,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "後踢",
+    "cost": [
+     "R"
+    ],
+    "dmg": "30",
+    "text": ""
+   },
+   {
+    "name": "真氣衝撞",
+    "cost": [
+     "R",
+     "C",
+     "C"
+    ],
+    "dmg": "90+",
+    "text": "若對手的戰鬥寶可夢為【1階進化】寶可夢，則增加90點傷害。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-012",
+  "set": "SV8",
+  "name": "比克提尼",
+  "officialId": 11192,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "R",
+  "abilities": [
+   {
+    "name": "勝利聲援",
+    "text": "只要這隻寶可夢在場上，自己的【火】屬性的進化寶可夢使用的招式，對對手的戰鬥寶可夢造成的傷害「+10」點。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "火焰",
+    "cost": [
+     "R",
+     "C"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-013",
+  "set": "SV8",
+  "name": "燃燒蟲",
+  "officialId": 11193,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "衝撞",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "吐火",
+    "cost": [
+     "R",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-014",
+  "set": "SV8",
+  "name": "火神蛾",
+  "officialId": 11194,
+  "cat": "P",
+  "stage": 1,
+  "hp": 140,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "吸血",
+    "cost": [
+     "C"
+    ],
+    "dmg": "30",
+    "text": "將這隻寶可夢恢復對對手的戰鬥寶可夢造成的傷害相同數值的HP。"
+   },
+   {
+    "name": "怒濤羽擊",
+    "cost": [
+     "R",
+     "C",
+     "C"
+    ],
+    "dmg": "150",
+    "text": "這隻寶可夢也受到50點傷害。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "燃燒蟲"
+ },
+ {
+  "id": "SV8-015",
+  "set": "SV8",
+  "name": "燒火蚣",
+  "officialId": 11195,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "火種",
+    "cost": [
+     "R"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "鉤住",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-016",
+  "set": "SV8",
+  "name": "焚焰蚣",
+  "officialId": 11196,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "燃燒熱浪",
+    "cost": [
+     "R"
+    ],
+    "dmg": "130",
+    "text": "自己的所有備戰寶可夢也各受到30點傷害。[在備戰區不計算弱點・抵抗力。]"
+   },
+   {
+    "name": "高溫爆破",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": ""
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "燒火蚣"
+ },
+ {
+  "id": "SV8-017",
+  "set": "SV8",
+  "name": "呆火鱷",
+  "officialId": 11197,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "熱灼燒",
+    "cost": [
+     "R",
+     "C"
+    ],
+    "dmg": "20",
+    "text": "將對手的戰鬥寶可夢【灼傷】。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-018",
+  "set": "SV8",
+  "name": "炙燙鱷",
+  "officialId": 11198,
+  "cat": "P",
+  "stage": 1,
+  "hp": 110,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "高溫吐息",
+    "cost": [
+     "R",
+     "C"
+    ],
+    "dmg": "30+",
+    "text": "擲1次硬幣若為正面，則增加50點傷害。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "呆火鱷"
+ },
+ {
+  "id": "SV8-019",
+  "set": "SV8",
+  "name": "骨紋巨聲鱷",
+  "officialId": 11199,
+  "cat": "P",
+  "stage": 2,
+  "hp": 180,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "純樸",
+    "cost": [],
+    "dmg": "",
+    "text": "這隻寶可夢不會受到對手的寶可夢使用招式的效果的影響。"
+   },
+   {
+    "name": "閃焰獨唱會",
+    "cost": [
+     "R",
+     "C"
+    ],
+    "dmg": "60+",
+    "text": "增加雙方的備戰寶可夢的數量×20點傷害。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "炙燙鱷"
+ },
+ {
+  "id": "SV8-020",
+  "set": "SV8",
+  "name": "炭小侍",
+  "officialId": 11200,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "打擊",
+    "cost": [
+     "R"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "噴射火焰",
+    "cost": [
+     "R",
+     "R",
+     "C"
+    ],
+    "dmg": "70",
+    "text": "選擇1個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-021",
+  "set": "SV8",
+  "name": "紅蓮鎧騎",
+  "officialId": 11201,
+  "cat": "P",
+  "stage": 1,
+  "hp": 140,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "烈焰",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "50",
+    "text": ""
+   },
+   {
+    "name": "紅蓮引爆",
+    "cost": [
+     "R",
+     "R",
+     "C"
+    ],
+    "dmg": "",
+    "text": "將這隻寶可夢身上附加的【火】能量卡全部丟棄，對手的1隻備戰寶可夢受到180點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "炭小侍"
+ },
+ {
+  "id": "SV8-022",
+  "set": "SV8",
+  "name": "蒼炎刃鬼",
+  "officialId": 11202,
+  "cat": "P",
+  "stage": 1,
+  "hp": 140,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "火焰咒詛",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將對手的所有寶可夢身上附加的特殊能量卡全部丟棄。"
+   },
+   {
+    "name": "黑煙斬",
+    "cost": [
+     "R",
+     "R",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "在下個自己的回合，這隻寶可夢無法使用招式。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "炭小侍"
+ },
+ {
+  "id": "SV8-023",
+  "set": "SV8",
+  "name": "狠辣椒ex",
+  "officialId": 11203,
+  "cat": "P",
+  "stage": 1,
+  "hp": 260,
+  "type": "R",
+  "abilities": [
+   {
+    "name": "雙重屬性",
+    "text": "只要這隻寶可夢在場上，改為【草】與【火】2種屬性。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "香料激怒",
+    "cost": [
+     "R",
+     "R"
+    ],
+    "dmg": "10+",
+    "text": "增加這隻寶可夢身上放置的傷害指示物的數量×70點傷害。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": true,
+  "from": "熱辣娃"
+ },
+ {
+  "id": "SV8-024",
+  "set": "SV8",
+  "name": "帕底亞 肯泰羅",
+  "officialId": 11204,
+  "cat": "P",
+  "stage": 0,
+  "hp": 130,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "上搗角擊",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "30",
+    "text": "若希望，選擇2個對手的戰鬥場的【2階進化】寶可夢身上附加的能量，放回對手的手牌。"
+   },
+   {
+    "name": "噴射頭擊",
+    "cost": [
+     "W",
+     "W",
+     "C"
+    ],
+    "dmg": "100",
+    "text": ""
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-025",
+  "set": "SV8",
+  "name": "醜醜魚",
+  "officialId": 11205,
+  "cat": "P",
+  "stage": 0,
+  "hp": 30,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "躍起逃走",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將這隻寶可夢與備戰寶可夢互換。"
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-026",
+  "set": "SV8",
+  "name": "美納斯ex",
+  "officialId": 11206,
+  "cat": "P",
+  "stage": 1,
+  "hp": 270,
+  "type": "W",
+  "abilities": [
+   {
+    "name": "璀璨鱗片",
+    "text": "這隻寶可夢不會受到對手的「太晶」寶可夢招式的傷害與效果的影響。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "昏睡飛濺",
+    "cost": [
+     "W",
+     "C",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "將對手的戰鬥寶可夢【睡眠】。"
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 2,
+  "ex": true,
+  "from": "醜醜魚"
+ },
+ {
+  "id": "SV8-027",
+  "set": "SV8",
+  "name": "海豹球",
+  "officialId": 11207,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "細雪",
+    "cost": [
+     "W"
+    ],
+    "dmg": "10",
+    "text": "將對手的戰鬥寶可夢【睡眠】。"
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-028",
+  "set": "SV8",
+  "name": "海魔獅",
+  "officialId": 11208,
+  "cat": "P",
+  "stage": 1,
+  "hp": 100,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "撞倒",
+    "cost": [
+     "W"
+    ],
+    "dmg": "30",
+    "text": ""
+   },
+   {
+    "name": "冰球",
+    "cost": [
+     "W",
+     "W"
+    ],
+    "dmg": "60",
+    "text": ""
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "海豹球"
+ },
+ {
+  "id": "SV8-029",
+  "set": "SV8",
+  "name": "帝牙海獅",
+  "officialId": 11209,
+  "cat": "P",
+  "stage": 2,
+  "hp": 170,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "凍結獠牙",
+    "cost": [
+     "W"
+    ],
+    "dmg": "60",
+    "text": "在下個對手的回合，身上附加的能量為2個以下的所有寶可夢無法使用招式。（包含新上場的寶可夢。）"
+   },
+   {
+    "name": "百萬噸墜落",
+    "cost": [
+     "W",
+     "W"
+    ],
+    "dmg": "170",
+    "text": "這隻寶可夢也受到50點傷害。"
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "海魔獅"
+ },
+ {
+  "id": "SV8-030",
+  "set": "SV8",
+  "name": "無殼海兔",
+  "officialId": 11210,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "潑灑清水",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-031",
+  "set": "SV8",
+  "name": "鐵包袱",
+  "officialId": 11211,
+  "cat": "P",
+  "stage": 0,
+  "hp": 100,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "瞬風衝激",
+    "cost": [
+     "W",
+     "W",
+     "C"
+    ],
+    "dmg": "200-",
+    "text": "減少對手的戰鬥寶可夢【撤退】所需的能量的數量×50點傷害。"
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-032",
+  "set": "SV8",
+  "name": "古劍豹",
+  "officialId": 11212,
+  "cat": "P",
+  "stage": 0,
+  "hp": 120,
+  "type": "W",
+  "abilities": [
+   {
+    "name": "沉雪",
+    "text": "在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將場上的競技場卡丟棄。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "冰柱閉環",
+    "cost": [
+     "W",
+     "W",
+     "C"
+    ],
+    "dmg": "120",
+    "text": "選擇1個這隻寶可夢身上附加的能量，放回手牌。"
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-033",
+  "set": "SV8",
+  "name": "皮卡丘ex",
+  "officialId": 11213,
+  "cat": "P",
+  "stage": 0,
+  "hp": 200,
+  "type": "L",
+  "abilities": [
+   {
+    "name": "勤奮之心",
+    "text": "這隻寶可夢的HP是全滿的狀態下，這隻寶可夢受到招式的傷害而【昏厥】時，這隻寶可夢不會【昏厥】，而是以剩餘HP為「10」的狀態留在場上。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "黃玉伏特",
+    "cost": [
+     "G",
+     "L",
+     "M"
+    ],
+    "dmg": "300",
+    "text": "選擇3個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": true
+ },
+ {
+  "id": "SV8-034",
+  "set": "SV8",
+  "name": "小磁怪",
+  "officialId": 11214,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "光彈",
+    "cost": [
+     "L"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-035",
+  "set": "SV8",
+  "name": "三合一磁怪",
+  "officialId": 11215,
+  "cat": "P",
+  "stage": 1,
+  "hp": 100,
+  "type": "L",
+  "abilities": [
+   {
+    "name": "過度放電",
+    "text": "在自己的回合時可使用1次，若使用，則將這隻寶可夢【昏厥】。從自己的棄牌區選擇最多3張基本能量卡，以任意方式附於自己的【雷】寶可夢身上。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "雷電球",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "40",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "小磁怪"
+ },
+ {
+  "id": "SV8-036",
+  "set": "SV8",
+  "name": "自爆磁怪",
+  "officialId": 11216,
+  "cat": "P",
+  "stage": 2,
+  "hp": 170,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "強勁磁場",
+    "cost": [
+     "L",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": "將對手的戰鬥寶可夢【混亂】。在下個對手的回合，受到這個招式的寶可夢無法撤退。"
+   },
+   {
+    "name": "電磁炮",
+    "cost": [
+     "L",
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "180",
+    "text": "在下個自己的回合，這隻寶可夢無法使用「電磁炮」。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "三合一磁怪"
+ },
+ {
+  "id": "SV8-037",
+  "set": "SV8",
+  "name": "洛托姆",
+  "officialId": 11217,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "粉碎脈衝",
+    "cost": [
+     "L"
+    ],
+    "dmg": "",
+    "text": "查看對手的手牌，將其中的「物品」卡與「寶可夢道具」卡全部丟棄。"
+   },
+   {
+    "name": "能量短路",
+    "cost": [
+     "L"
+    ],
+    "dmg": "20×",
+    "text": "造成對手的戰鬥寶可夢身上附加的能量的數量×20點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-038",
+  "set": "SV8",
+  "name": "斑斑馬",
+  "officialId": 11218,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "叼",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫抽出1張卡。"
+   },
+   {
+    "name": "劈哩啪啦",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-039",
+  "set": "SV8",
+  "name": "雷電斑馬",
+  "officialId": 11219,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "踢",
+    "cost": [
+     "L"
+    ],
+    "dmg": "30",
+    "text": ""
+   },
+   {
+    "name": "音速伏特",
+    "cost": [
+     "L",
+     "L",
+     "C"
+    ],
+    "dmg": "120",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "斑斑馬"
+ },
+ {
+  "id": "SV8-040",
+  "set": "SV8",
+  "name": "泥巴魚",
+  "officialId": 11220,
+  "cat": "P",
+  "stage": 0,
+  "hp": 110,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "劈啪麻痺",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "50",
+    "text": "擲1次硬幣若為正面，則將對手的戰鬥寶可夢【麻痺】。再選擇1個那隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-041",
+  "set": "SV8",
+  "name": "卡璞・鳴鳴",
+  "officialId": 11221,
+  "cat": "P",
+  "stage": 0,
+  "hp": 120,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "召喚雷電",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫選擇最多2張【雷】寶可夢卡，在給對手看過後加入手牌。並且重洗牌庫。"
+   },
+   {
+    "name": "獎賞反擊",
+    "cost": [
+     "L",
+     "L",
+     "C"
+    ],
+    "dmg": "90+",
+    "text": "若自己剩餘獎賞卡的張數，比對手剩餘獎賞卡的張數多，則增加90點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-042",
+  "set": "SV8",
+  "name": "電海燕",
+  "officialId": 11222,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "燕返",
+    "cost": [
+     "L"
+    ],
+    "dmg": "10+",
+    "text": "擲1次硬幣若為正面，則增加20點傷害。"
+   }
+  ],
+  "weak": "L",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-043",
+  "set": "SV8",
+  "name": "大電海燕",
+  "officialId": 11223,
+  "cat": "P",
+  "stage": 1,
+  "hp": 120,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "滑翔",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "50",
+    "text": ""
+   },
+   {
+    "name": "風暴伏特",
+    "cost": [
+     "L",
+     "L",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "將這隻寶可夢身上附加的所有能量卡，以任意方式改附於備戰寶可夢身上。"
+   }
+  ],
+  "weak": "L",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false,
+  "from": "電海燕"
+ },
+ {
+  "id": "SV8-044",
+  "set": "SV8",
+  "name": "密勒頓",
+  "officialId": 11224,
+  "cat": "P",
+  "stage": 0,
+  "hp": 120,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "防護代碼",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "40",
+    "text": "在下個對手的回合，自己的所有「未來」寶可夢不會受到「寶可夢【ex】」招式的傷害。若這隻寶可夢離開戰鬥場，則這個效果消除。"
+   },
+   {
+    "name": "閃電爪",
+    "cost": [
+     "L",
+     "C",
+     "C"
+    ],
+    "dmg": "100",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-045",
+  "set": "SV8",
+  "name": "波克比",
+  "officialId": 11225,
+  "cat": "P",
+  "stage": 0,
+  "hp": 50,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "拍擊",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-046",
+  "set": "SV8",
+  "name": "波克基古",
+  "officialId": 11226,
+  "cat": "P",
+  "stage": 1,
+  "hp": 90,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "吸取之吻",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "30",
+    "text": "將這隻寶可夢恢復「30」HP。"
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "波克比"
+ },
+ {
+  "id": "SV8-047",
+  "set": "SV8",
+  "name": "波克基斯",
+  "officialId": 11227,
+  "cat": "P",
+  "stage": 2,
+  "hp": 140,
+  "type": "P",
+  "abilities": [
+   {
+    "name": "奇跡之吻",
+    "text": "只要這隻寶可夢在場上，每次當對手的戰鬥寶可夢【昏厥】時，自己擲1次硬幣。若為正面，則多獲得1張獎賞卡。無論有多少隻擁有這個特性的寶可夢，這個效果也不會重複。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "高速之翼",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "140",
+    "text": ""
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "波克基古"
+ },
+ {
+  "id": "SV8-048",
+  "set": "SV8",
+  "name": "由克希",
+  "officialId": 11228,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "痛楚記憶",
+    "cost": [
+     "P"
+    ],
+    "dmg": "",
+    "text": "在對手的所有寶可夢身上各放置2個傷害指示物。"
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-049",
+  "set": "SV8",
+  "name": "艾姆利多",
+  "officialId": 11229,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "滿載心田",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的手牌選擇最多2張「基本【超】能量」卡，以任意方式附於自己的寶可夢身上。"
+   },
+   {
+    "name": "神之爆炸",
+    "cost": [
+     "P",
+     "P"
+    ],
+    "dmg": "160",
+    "text": "若自己的備戰區沒有「由克希」「亞克諾姆」，則這個招式失敗。"
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-050",
+  "set": "SV8",
+  "name": "亞克諾姆",
+  "officialId": 11230,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "意志強念",
+    "cost": [
+     "P",
+     "C"
+    ],
+    "dmg": "10+",
+    "text": "增加對手的所有寶可夢身上放置的傷害指示物的數量×10點傷害。"
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-051",
+  "set": "SV8",
+  "name": "哭哭面具",
+  "officialId": 11231,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "囈語",
+    "cost": [
+     "P"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "咒怨一下",
+    "cost": [
+     "P",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-052",
+  "set": "SV8",
+  "name": "死神棺",
+  "officialId": 11232,
+  "cat": "P",
+  "stage": 1,
+  "hp": 120,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "冥府之律",
+    "cost": [
+     "P"
+    ],
+    "dmg": "",
+    "text": "在雙方的所有擁有特性的寶可夢身上，各放置6個傷害指示物。"
+   },
+   {
+    "name": "陰森射擊",
+    "cost": [
+     "P",
+     "C",
+     "C"
+    ],
+    "dmg": "100",
+    "text": ""
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 2,
+  "ex": false,
+  "from": "哭哭面具"
+ },
+ {
+  "id": "SV8-053",
+  "set": "SV8",
+  "name": "妙喵",
+  "officialId": 11233,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "看透",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "查看對手的手牌。"
+   },
+   {
+    "name": "精神射擊",
+    "cost": [
+     "P",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-054",
+  "set": "SV8",
+  "name": "超能妙喵",
+  "officialId": 11234,
+  "cat": "P",
+  "stage": 1,
+  "hp": 90,
+  "type": "P",
+  "abilities": [
+   {
+    "name": "誘導之尾",
+    "text": "在自己的回合，若從自己的手牌將1張「悠哉尾草棒」丟棄，則可使用1次。選擇1隻對手的備戰寶可夢，與戰鬥寶可夢互換。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "精神射擊",
+    "cost": [
+     "P",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": ""
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false,
+  "from": "妙喵"
+ },
+ {
+  "id": "SV8-055",
+  "set": "SV8",
+  "name": "咚咚鼠",
+  "officialId": 11235,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "電磁聲納",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的棄牌區選擇1張訓練家卡，在給對手看過後加入手牌。"
+   },
+   {
+    "name": "咬",
+    "cost": [
+     "P"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-056",
+  "set": "SV8",
+  "name": "沙丘娃",
+  "officialId": 11236,
+  "cat": "P",
+  "stage": 0,
+  "hp": 90,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "沙沫",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "50",
+    "text": ""
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 3,
+  "ex": false
+ },
+ {
+  "id": "SV8-057",
+  "set": "SV8",
+  "name": "噬沙堡爺ex",
+  "officialId": 11237,
+  "cat": "P",
+  "stage": 1,
+  "hp": 280,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "流沙地獄",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "在下個對手的回合，受到這個招式的寶可夢無法撤退。"
+   },
+   {
+    "name": "重晶石之獄",
+    "cost": [
+     "W",
+     "P",
+     "F"
+    ],
+    "dmg": "",
+    "text": "在對手的所有備戰寶可夢身上放置傷害指示物直到各自的剩餘HP變為「100」為止。"
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 4,
+  "ex": true,
+  "from": "沙丘娃"
+ },
+ {
+  "id": "SV8-058",
+  "set": "SV8",
+  "name": "愛管侍",
+  "officialId": 11238,
+  "cat": "P",
+  "stage": 0,
+  "hp": 100,
+  "type": "P",
+  "abilities": [
+   {
+    "name": "悉心治癒",
+    "text": "在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將自己的戰鬥寶可夢恢復「30」HP，特殊狀態也恢復1個。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "超念力",
+    "cost": [
+     "P",
+     "C"
+    ],
+    "dmg": "50",
+    "text": ""
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-059",
+  "set": "SV8",
+  "name": "振翼髮",
+  "officialId": 11239,
+  "cat": "P",
+  "stage": 0,
+  "hp": 90,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "蠱惑挪移",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "",
+    "text": "選擇1隻自己的備戰區的「古代」寶可夢，將所選的寶可夢身上放置的傷害指示物，全部改放於對手的戰鬥寶可夢身上。"
+   },
+   {
+    "name": "月亮之力",
+    "cost": [
+     "P",
+     "P"
+    ],
+    "dmg": "70",
+    "text": "在下個對手的回合，受到這個招式的寶可夢使用招式的傷害「-30」點。"
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-060",
+  "set": "SV8",
+  "name": "猴怪",
+  "officialId": 11240,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "二連劈",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10×",
+    "text": "擲2次硬幣，造成正面出現的次數×10點傷害。"
+   }
+  ],
+  "weak": "P",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-061",
+  "set": "SV8",
+  "name": "火爆猴",
+  "officialId": 11241,
+  "cat": "P",
+  "stage": 1,
+  "hp": 110,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "掃腿",
+    "cost": [
+     "F"
+    ],
+    "dmg": "30",
+    "text": "擲1次硬幣若為正面，則選擇1個對手的戰鬥寶可夢身上附加的能量，將其丟棄。"
+   },
+   {
+    "name": "百萬噸重拳",
+    "cost": [
+     "F",
+     "C"
+    ],
+    "dmg": "70",
+    "text": ""
+   }
+  ],
+  "weak": "P",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "猴怪"
+ },
+ {
+  "id": "SV8-062",
+  "set": "SV8",
+  "name": "棄世猴",
+  "officialId": 11242,
+  "cat": "P",
+  "stage": 2,
+  "hp": 140,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "暴走",
+    "cost": [
+     "F"
+    ],
+    "dmg": "130",
+    "text": "將這隻寶可夢【混亂】。"
+   },
+   {
+    "name": "同命戰鬥",
+    "cost": [
+     "F",
+     "C"
+    ],
+    "dmg": "",
+    "text": "將雙方的戰鬥寶可夢【昏厥】。"
+   }
+  ],
+  "weak": "P",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "火爆猴"
+ },
+ {
+  "id": "SV8-063",
+  "set": "SV8",
+  "name": "帕底亞 肯泰羅",
+  "officialId": 11243,
+  "cat": "P",
+  "stage": 0,
+  "hp": 130,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "踢飛",
+    "cost": [
+     "F",
+     "C"
+    ],
+    "dmg": "40",
+    "text": ""
+   },
+   {
+    "name": "障礙踩踏",
+    "cost": [
+     "F",
+     "C",
+     "C"
+    ],
+    "dmg": "90",
+    "text": "在下個對手的回合，受到這個招式的【基礎】寶可夢，無法使用招式。"
+   }
+  ],
+  "weak": "P",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-064",
+  "set": "SV8",
+  "name": "小小象",
+  "officialId": 11244,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "頭錘",
+    "cost": [
+     "F"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-065",
+  "set": "SV8",
+  "name": "頓甲",
+  "officialId": 11245,
+  "cat": "P",
+  "stage": 1,
+  "hp": 150,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "打垮",
+    "cost": [
+     "F"
+    ],
+    "dmg": "40",
+    "text": "這個招式的傷害不計算對手的戰鬥寶可夢身上的附加效果。"
+   },
+   {
+    "name": "防守回轉",
+    "cost": [
+     "F",
+     "C",
+     "C"
+    ],
+    "dmg": "120",
+    "text": "選擇2個這隻寶可夢身上附加的能量，將其丟棄。在下個對手的回合，這隻寶可夢受到招式的傷害「-100」點。"
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 4,
+  "ex": false,
+  "from": "小小象"
+ },
+ {
+  "id": "SV8-066",
+  "set": "SV8",
+  "name": "海兔獸",
+  "officialId": 11246,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "F",
+  "abilities": [
+   {
+    "name": "黏著束縛",
+    "text": "只要這隻寶可夢在備戰區，雙方的備戰區的【2階進化】寶可夢的特性全部消除。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "泥巴射擊",
+    "cost": [
+     "F",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": ""
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 3,
+  "ex": false,
+  "from": "無殼海兔"
+ },
+ {
+  "id": "SV8-067",
+  "set": "SV8",
+  "name": "晶光芽",
+  "officialId": 11247,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "岩石投擲",
+    "cost": [
+     "F"
+    ],
+    "dmg": "10",
+    "text": "這個招式的傷害不計算抵抗力。"
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-068",
+  "set": "SV8",
+  "name": "晶光花",
+  "officialId": 11248,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "侵蝕碎塊",
+    "cost": [
+     "C"
+    ],
+    "dmg": "20",
+    "text": "將對手的戰鬥寶可夢【中毒】。在下個對手的回合，受到這個招式的寶可夢，無法附上從手牌使出的能量卡。"
+   },
+   {
+    "name": "落石",
+    "cost": [
+     "F",
+     "C"
+    ],
+    "dmg": "60",
+    "text": ""
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "晶光芽"
+ },
+ {
+  "id": "SV8-069",
+  "set": "SV8",
+  "name": "故勒頓",
+  "officialId": 11249,
+  "cat": "P",
+  "stage": 0,
+  "hp": 130,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "輪番狂攻",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "30+",
+    "text": "在上個自己的回合，若這隻寶可夢以外的「古代」寶可夢使用了招式，則增加150點傷害。"
+   },
+   {
+    "name": "頭突",
+    "cost": [
+     "F",
+     "F",
+     "C"
+    ],
+    "dmg": "110",
+    "text": ""
+   }
+  ],
+  "weak": "P",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-070",
+  "set": "SV8",
+  "name": "單首龍",
+  "officialId": 11250,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "踩落",
+    "cost": [
+     "D"
+    ],
+    "dmg": "",
+    "text": "將對手的牌庫上方1張卡丟棄。"
+   },
+   {
+    "name": "咬住",
+    "cost": [
+     "D",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-071",
+  "set": "SV8",
+  "name": "雙首暴龍",
+  "officialId": 11251,
+  "cat": "P",
+  "stage": 1,
+  "hp": 100,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "踩落",
+    "cost": [
+     "D"
+    ],
+    "dmg": "",
+    "text": "將對手的牌庫上方2張卡丟棄。"
+   },
+   {
+    "name": "暗之牙",
+    "cost": [
+     "D",
+     "C",
+     "C"
+    ],
+    "dmg": "60",
+    "text": ""
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "單首龍"
+ },
+ {
+  "id": "SV8-072",
+  "set": "SV8",
+  "name": "三首惡龍ex",
+  "officialId": 11252,
+  "cat": "P",
+  "stage": 2,
+  "hp": 330,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "粉碎頭",
+    "cost": [
+     "D",
+     "C"
+    ],
+    "dmg": "200",
+    "text": "將對手的牌庫上方3張卡丟棄。"
+   },
+   {
+    "name": "黑曜石",
+    "cost": [
+     "P",
+     "D",
+     "M",
+     "C"
+    ],
+    "dmg": "130",
+    "text": "對手的2隻備戰寶可夢也各受到130點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 3,
+  "ex": true,
+  "from": "雙首暴龍"
+ },
+ {
+  "id": "SV8-073",
+  "set": "SV8",
+  "name": "滋汁鼴",
+  "officialId": 11253,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "噴汁",
+    "cost": [
+     "D"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-074",
+  "set": "SV8",
+  "name": "塗標客",
+  "officialId": 11254,
+  "cat": "P",
+  "stage": 1,
+  "hp": 100,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "惡作劇作畫",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從對手的棄牌區選擇最多3張能量卡，以任意方式附於對手的寶可夢身上。"
+   },
+   {
+    "name": "能量塗鴉",
+    "cost": [
+     "D",
+     "D"
+    ],
+    "dmg": "40×",
+    "text": "造成對手的所有寶可夢身上附加的能量的數量×40點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "滋汁鼴"
+ },
+ {
+  "id": "SV8-075",
+  "set": "SV8",
+  "name": "桃歹郎",
+  "officialId": 11255,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "D",
+  "abilities": [
+   {
+    "name": "劇毒支配",
+    "text": "只要這隻寶可夢在戰鬥場上，對手的【中毒】的寶可夢，因【中毒】而放置的傷害指示物的數量增加5個。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "猛毒連鎖",
+    "cost": [
+     "D",
+     "C"
+    ],
+    "dmg": "10",
+    "text": "將對手的戰鬥寶可夢【中毒】。在下個對手的回合，受到這個招式的寶可夢無法撤退。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-076",
+  "set": "SV8",
+  "name": "阿羅拉 地鼠",
+  "officialId": 11256,
+  "cat": "P",
+  "stage": 0,
+  "hp": 50,
+  "type": "M",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "偷襲",
+    "cost": [],
+    "dmg": "30",
+    "text": "擲1次硬幣若為反面，則這個招式失敗。"
+   }
+  ],
+  "weak": "R",
+  "resist": "G",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-077",
+  "set": "SV8",
+  "name": "阿羅拉 三地鼠",
+  "officialId": 11257,
+  "cat": "P",
+  "stage": 1,
+  "hp": 110,
+  "type": "M",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "三賓果",
+    "cost": [],
+    "dmg": "120",
+    "text": "若自己的手牌不是3張，則這個招式失敗。"
+   }
+  ],
+  "weak": "R",
+  "resist": "G",
+  "retreat": 2,
+  "ex": false,
+  "from": "阿羅拉"
+ },
+ {
+  "id": "SV8-078",
+  "set": "SV8",
+  "name": "銅鏡怪",
+  "officialId": 11258,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "M",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "盾牌攻擊",
+    "cost": [
+     "M",
+     "C"
+    ],
+    "dmg": "20+",
+    "text": "擲1次硬幣若為正面，則增加20點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": "G",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-079",
+  "set": "SV8",
+  "name": "青銅鐘",
+  "officialId": 11259,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "M",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "迴轉攻擊",
+    "cost": [
+     "M",
+     "C"
+    ],
+    "dmg": "50",
+    "text": ""
+   },
+   {
+    "name": "雙重衝擊",
+    "cost": [
+     "M",
+     "C",
+     "C"
+    ],
+    "dmg": "100×",
+    "text": "擲2次硬幣，造成正面出現的次數×100點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": "G",
+  "retreat": 3,
+  "ex": false,
+  "from": "銅鏡怪"
+ },
+ {
+  "id": "SV8-080",
+  "set": "SV8",
+  "name": "無極汰那",
+  "officialId": 11260,
+  "cat": "P",
+  "stage": 0,
+  "hp": 150,
+  "type": "N",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "汰那爆破",
+    "cost": [
+     "D"
+    ],
+    "dmg": "10+",
+    "text": "若對手的戰鬥寶可夢為「寶可夢【ex】」，則增加80點傷害。"
+   },
+   {
+    "name": "世界之末",
+    "cost": [
+     "R",
+     "D",
+     "D"
+    ],
+    "dmg": "230",
+    "text": "將場上的競技場卡丟棄。若無法丟棄，則這個招式失敗。"
+   }
+  ],
+  "weak": null,
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-081",
+  "set": "SV8",
+  "name": "米立龍ex",
+  "officialId": 11261,
+  "cat": "P",
+  "stage": 0,
+  "hp": 160,
+  "type": "N",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "突襲水泵",
+    "cost": [
+     "R",
+     "W"
+    ],
+    "dmg": "100",
+    "text": "這個招式的傷害不計算對手的戰鬥寶可夢身上的附加效果。"
+   },
+   {
+    "name": "硃砂誘餌",
+    "cost": [
+     "R",
+     "W",
+     "D"
+    ],
+    "dmg": "",
+    "text": "查看自己的牌庫上方10張卡，從其中選擇任意數量的寶可夢卡，放置於備戰區。將剩餘卡放回牌庫並重洗。"
+   }
+  ],
+  "weak": null,
+  "resist": null,
+  "retreat": 1,
+  "ex": true
+ },
+ {
+  "id": "SV8-082",
+  "set": "SV8",
+  "name": "懶人獺",
+  "officialId": 11262,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "悠哉",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將這隻寶可夢恢復「60」HP。在下個自己的回合，這隻寶可夢無法撤退。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-083",
+  "set": "SV8",
+  "name": "過動猿",
+  "officialId": 11263,
+  "cat": "P",
+  "stage": 1,
+  "hp": 90,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "利爪揮砍",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "50",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "懶人獺"
+ },
+ {
+  "id": "SV8-084",
+  "set": "SV8",
+  "name": "請假王ex",
+  "officialId": 11264,
+  "cat": "P",
+  "stage": 2,
+  "hp": 340,
+  "type": "C",
+  "abilities": [
+   {
+    "name": "懶怠個性",
+    "text": "若對手的場上沒有「寶可夢【ex】・【V】」，則這隻寶可夢無法使用招式。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "偉大橫掃",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "280",
+    "text": "選擇1個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 4,
+  "ex": true,
+  "from": "過動猿"
+ },
+ {
+  "id": "SV8-085",
+  "set": "SV8",
+  "name": "貓鼬斬",
+  "officialId": 11265,
+  "cat": "P",
+  "stage": 0,
+  "hp": 90,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "連斬",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10+",
+    "text": "擲3次硬幣。若出現1次正面，則增加20點傷害。若出現2次正面，則增加50點傷害。若全部為正面，則增加80點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-086",
+  "set": "SV8",
+  "name": "變隱龍",
+  "officialId": 11266,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "C",
+  "abilities": [
+   {
+    "name": "躲藏高手",
+    "text": "這隻寶可夢受到招式的傷害時，自己擲1次硬幣。若為正面，則這隻寶可夢不會受到那個傷害。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "舌之鞭打",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "",
+    "text": "對手的1隻寶可夢受到30點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-087",
+  "set": "SV8",
+  "name": "爆炸頭水牛",
+  "officialId": 11267,
+  "cat": "P",
+  "stage": 0,
+  "hp": 130,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "等待角擊",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "40",
+    "text": "在下個對手的回合，這隻寶可夢受到招式的傷害時，在使用招式的寶可夢身上放置6個傷害指示物。"
+   },
+   {
+    "name": "粉碎頭擊",
+    "cost": [
+     "C",
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "150",
+    "text": "選擇2個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-088",
+  "set": "SV8",
+  "name": "傘電蜥",
+  "officialId": 11268,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "小伏特",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "突擊",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "40",
+    "text": "這隻寶可夢也受到10點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-089",
+  "set": "SV8",
+  "name": "光電傘蜥",
+  "officialId": 11269,
+  "cat": "P",
+  "stage": 1,
+  "hp": 110,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "拋物面充電",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫選擇最多4張能量卡，在給對手看過後加入手牌。並且重洗牌庫。"
+   },
+   {
+    "name": "電氣猛擊",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "傘電蜥"
+ },
+ {
+  "id": "SV8-090",
+  "set": "SV8",
+  "name": "智揮猩",
+  "officialId": 11270,
+  "cat": "P",
+  "stage": 0,
+  "hp": 120,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "掌握弱點",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "在下個自己的回合結束前，受到這個招式的寶可夢弱點改爲【無】屬性。[弱點以「×2」計算傷害。]"
+   },
+   {
+    "name": "掌擊",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-091",
+  "set": "SV8",
+  "name": "一對鼠",
+  "officialId": 11271,
+  "cat": "P",
+  "stage": 0,
+  "hp": 40,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "嬉鬧",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10+",
+    "text": "擲1次硬幣若為正面，則增加10點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-092",
+  "set": "SV8",
+  "name": "一家鼠",
+  "officialId": 11272,
+  "cat": "P",
+  "stage": 1,
+  "hp": 80,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "家族行軍",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫選擇最多2張「一家鼠（包含『寶可夢【ex】』）」，放置於備戰區。並且重洗牌庫。"
+   },
+   {
+    "name": "連續門牙",
+    "cost": [
+     "C"
+    ],
+    "dmg": "30×",
+    "text": "擲4次硬幣，造成正面出現的次數×30點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "一對鼠"
+ },
+ {
+  "id": "SV8-093",
+  "set": "SV8",
+  "name": "太樂巴戈斯",
+  "officialId": 11273,
+  "cat": "P",
+  "stage": 0,
+  "hp": 120,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "稜鏡充能",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫選擇最多3張各不同屬性的基本能量卡，以任意方式附於自己的「太晶」寶可夢身上。並且重洗牌庫。"
+   },
+   {
+    "name": "堅硬衝撞",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "100",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-094",
+  "set": "SV8",
+  "name": "推理組合",
+  "officialId": 11274,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "查看自己的牌庫上方3張卡，以任意順序排列，放回牌庫上方。或者將那些卡全部翻回反面並重洗，放回牌庫下方。"
+ },
+ {
+  "id": "SV8-095",
+  "set": "SV8",
+  "name": "急進開關",
+  "officialId": 11275,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "將自己的戰鬥寶可夢與備戰寶可夢互換。然後，選擇換入備戰區的寶可夢身上附加的任意數量的能量卡，改附於新的戰鬥寶可夢身上。"
+ },
+ {
+  "id": "SV8-096",
+  "set": "SV8",
+  "name": "悠哉尾草棒",
+  "officialId": 11276,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "這張卡只可在後攻玩家的最初回合使用。 選擇1個對手的場上寶可夢身上附加的能量，放回對手的手牌。"
+ },
+ {
+  "id": "SV8-097",
+  "set": "SV8",
+  "name": "奇跡耳麥",
+  "officialId": 11277,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "從自己的棄牌區選擇最多2張支援者卡，在給對手看過後加入手牌。"
+ },
+ {
+  "id": "SV8-098",
+  "set": "SV8",
+  "name": "希望護身符",
+  "officialId": 11278,
+  "cat": "T",
+  "trainer": "Tool",
+  "text": "附有這張卡的寶可夢受到對手的寶可夢招式的傷害而【昏厥】時，從自己的牌庫任意選擇最多3張卡加入手牌。並且重洗牌庫。"
+ },
+ {
+  "id": "SV8-099",
+  "set": "SV8",
+  "name": "刺耳果",
+  "officialId": 11279,
+  "cat": "T",
+  "trainer": "Tool",
+  "text": "附有這張卡的寶可夢受到對手的【惡】寶可夢招式的傷害時，那個傷害「-60」點，將這張卡丟棄。"
+ },
+ {
+  "id": "SV8-100",
+  "set": "SV8",
+  "name": "霹霹果",
+  "officialId": 11280,
+  "cat": "T",
+  "trainer": "Tool",
+  "text": "附有這張卡的寶可夢受到對手的【鋼】寶可夢招式的傷害時，那個傷害「-60」點，將這張卡丟棄。"
+ },
+ {
+  "id": "SV8-101",
+  "set": "SV8",
+  "name": "招式學習器 螢石",
+  "officialId": 11281,
+  "cat": "T",
+  "trainer": "Tool",
+  "text": "附有這張卡的寶可夢，可使用這張卡上寫的招式。[需要有足夠使用招式的能量。]將附於寶可夢身上的這張卡，在自己的回合結束時丟棄。 螢石 將這隻寶可夢身上附加的能量卡全部丟棄，將自己的所有「太晶」寶可夢的HP全部恢復。"
+ },
+ {
+  "id": "SV8-102",
+  "set": "SV8",
+  "name": "席藍",
+  "officialId": 11282,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "從自己的牌庫選擇最多3張「寶可夢【ex】」卡，在給對手看過後加入手牌。並且重洗牌庫。"
+ },
+ {
+  "id": "SV8-103",
+  "set": "SV8",
+  "name": "希特隆的機智",
+  "officialId": 11283,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "將自己的所有【雷】寶可夢各恢復「60」HP。"
+ },
+ {
+  "id": "SV8-104",
+  "set": "SV8",
+  "name": "阿蜜的目光",
+  "officialId": 11284,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "在下個對手的回合，自己的所有寶可夢受到對手的寶可夢招式的傷害「-30」點。（包含新上場的寶可夢。）"
+ },
+ {
+  "id": "SV8-105",
+  "set": "SV8",
+  "name": "激動競技場",
+  "officialId": 11285,
+  "cat": "T",
+  "trainer": "Stadium",
+  "text": "雙方場上所有【基礎】寶可夢的最大HP各「+30」。"
+ },
+ {
+  "id": "SV8-106",
+  "set": "SV8",
+  "name": "引力山岳",
+  "officialId": 11286,
+  "cat": "T",
+  "trainer": "Stadium",
+  "text": "雙方場上所有【2階進化】寶可夢的最大HP各「-30」。"
+ },
+ {
+  "id": "SV8-107",
+  "set": "SV8",
+  "name": "彩粉蝶",
+  "officialId": 11460,
+  "cat": "P",
+  "stage": 2,
+  "hp": 120,
+  "type": "G",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "進化粉",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫，選擇自己的所有備戰寶可夢進化而來的卡各1張，放置於各自身上完成進化。並且重洗牌庫。"
+   },
+   {
+    "name": "利刃之風",
+    "cost": [
+     "G"
+    ],
+    "dmg": "90",
+    "text": ""
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "粉蝶蛹"
+ },
+ {
+  "id": "SV8-108",
+  "set": "SV8",
+  "name": "燃燒蟲",
+  "officialId": 11461,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "衝撞",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "吐火",
+    "cost": [
+     "R",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-109",
+  "set": "SV8",
+  "name": "蒼炎刃鬼",
+  "officialId": 11462,
+  "cat": "P",
+  "stage": 1,
+  "hp": 140,
+  "type": "R",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "火焰咒詛",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將對手的所有寶可夢身上附加的特殊能量卡全部丟棄。"
+   },
+   {
+    "name": "黑煙斬",
+    "cost": [
+     "R",
+     "R",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "在下個自己的回合，這隻寶可夢無法使用招式。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "炭小侍"
+ },
+ {
+  "id": "SV8-110",
+  "set": "SV8",
+  "name": "醜醜魚",
+  "officialId": 11463,
+  "cat": "P",
+  "stage": 0,
+  "hp": 30,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "躍起逃走",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將這隻寶可夢與備戰寶可夢互換。"
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-111",
+  "set": "SV8",
+  "name": "海豹球",
+  "officialId": 11464,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "W",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "細雪",
+    "cost": [
+     "W"
+    ],
+    "dmg": "10",
+    "text": "將對手的戰鬥寶可夢【睡眠】。"
+   }
+  ],
+  "weak": "M",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-112",
+  "set": "SV8",
+  "name": "三合一磁怪",
+  "officialId": 11465,
+  "cat": "P",
+  "stage": 1,
+  "hp": 100,
+  "type": "L",
+  "abilities": [
+   {
+    "name": "過度放電",
+    "text": "在自己的回合時可使用1次，若使用，則將這隻寶可夢【昏厥】。從自己的棄牌區選擇最多3張基本能量卡，以任意方式附於自己的【雷】寶可夢身上。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "雷電球",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "40",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "小磁怪"
+ },
+ {
+  "id": "SV8-113",
+  "set": "SV8",
+  "name": "泥巴魚",
+  "officialId": 11466,
+  "cat": "P",
+  "stage": 0,
+  "hp": 110,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "劈啪麻痺",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "50",
+    "text": "擲1次硬幣若為正面，則將對手的戰鬥寶可夢【麻痺】。再選擇1個那隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-114",
+  "set": "SV8",
+  "name": "艾姆利多",
+  "officialId": 11467,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "滿載心田",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的手牌選擇最多2張「基本【超】能量」卡，以任意方式附於自己的寶可夢身上。"
+   },
+   {
+    "name": "神之爆炸",
+    "cost": [
+     "P",
+     "P"
+    ],
+    "dmg": "160",
+    "text": "若自己的備戰區沒有「由克希」「亞克諾姆」，則這個招式失敗。"
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-115",
+  "set": "SV8",
+  "name": "小小象",
+  "officialId": 11468,
+  "cat": "P",
+  "stage": 0,
+  "hp": 80,
+  "type": "F",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "頭錘",
+    "cost": [
+     "F"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-116",
+  "set": "SV8",
+  "name": "阿羅拉 三地鼠",
+  "officialId": 11469,
+  "cat": "P",
+  "stage": 1,
+  "hp": 110,
+  "type": "M",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "三賓果",
+    "cost": [],
+    "dmg": "120",
+    "text": "若自己的手牌不是3張，則這個招式失敗。"
+   }
+  ],
+  "weak": "R",
+  "resist": "G",
+  "retreat": 2,
+  "ex": false,
+  "from": "阿羅拉"
+ },
+ {
+  "id": "SV8-117",
+  "set": "SV8",
+  "name": "懶人獺",
+  "officialId": 11470,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "悠哉",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "將這隻寶可夢恢復「60」HP。在下個自己的回合，這隻寶可夢無法撤退。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false
+ },
+ {
+  "id": "SV8-118",
+  "set": "SV8",
+  "name": "變隱龍",
+  "officialId": 11471,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "C",
+  "abilities": [
+   {
+    "name": "躲藏高手",
+    "text": "這隻寶可夢受到招式的傷害時，自己擲1次硬幣。若為正面，則這隻寶可夢不會受到那個傷害。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "舌之鞭打",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "",
+    "text": "對手的1隻寶可夢受到30點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SV8-119",
+  "set": "SV8",
+  "name": "鐵蟻ex",
+  "officialId": 11472,
+  "cat": "P",
+  "stage": 0,
+  "hp": 190,
+  "type": "G",
+  "abilities": [
+   {
+    "name": "突然削退",
+    "text": "在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將對手的牌庫上方1張卡丟棄。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "復仇粉碎",
+    "cost": [
+     "G",
+     "C",
+     "C"
+    ],
+    "dmg": "120+",
+    "text": "增加對手已經獲得的獎賞卡的張數×30點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 2,
+  "ex": true
+ },
+ {
+  "id": "SV8-120",
+  "set": "SV8",
+  "name": "狠辣椒ex",
+  "officialId": 11473,
+  "cat": "P",
+  "stage": 1,
+  "hp": 260,
+  "type": "R",
+  "abilities": [
+   {
+    "name": "雙重屬性",
+    "text": "只要這隻寶可夢在場上，改為【草】與【火】2種屬性。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "香料激怒",
+    "cost": [
+     "R",
+     "R"
+    ],
+    "dmg": "10+",
+    "text": "增加這隻寶可夢身上放置的傷害指示物的數量×70點傷害。"
+   }
+  ],
+  "weak": "W",
+  "resist": null,
+  "retreat": 2,
+  "ex": true,
+  "from": "熱辣娃"
+ },
+ {
+  "id": "SV8-121",
+  "set": "SV8",
+  "name": "美納斯ex",
+  "officialId": 11474,
+  "cat": "P",
+  "stage": 1,
+  "hp": 270,
+  "type": "W",
+  "abilities": [
+   {
+    "name": "璀璨鱗片",
+    "text": "這隻寶可夢不會受到對手的「太晶」寶可夢招式的傷害與效果的影響。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "昏睡飛濺",
+    "cost": [
+     "W",
+     "C",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "將對手的戰鬥寶可夢【睡眠】。"
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 2,
+  "ex": true,
+  "from": "醜醜魚"
+ },
+ {
+  "id": "SV8-122",
+  "set": "SV8",
+  "name": "皮卡丘ex",
+  "officialId": 11475,
+  "cat": "P",
+  "stage": 0,
+  "hp": 200,
+  "type": "L",
+  "abilities": [
+   {
+    "name": "勤奮之心",
+    "text": "這隻寶可夢的HP是全滿的狀態下，這隻寶可夢受到招式的傷害而【昏厥】時，這隻寶可夢不會【昏厥】，而是以剩餘HP為「10」的狀態留在場上。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "黃玉伏特",
+    "cost": [
+     "G",
+     "L",
+     "M"
+    ],
+    "dmg": "300",
+    "text": "選擇3個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": true
+ },
+ {
+  "id": "SV8-123",
+  "set": "SV8",
+  "name": "噬沙堡爺ex",
+  "officialId": 11476,
+  "cat": "P",
+  "stage": 1,
+  "hp": 280,
+  "type": "P",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "流沙地獄",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "在下個對手的回合，受到這個招式的寶可夢無法撤退。"
+   },
+   {
+    "name": "重晶石之獄",
+    "cost": [
+     "W",
+     "P",
+     "F"
+    ],
+    "dmg": "",
+    "text": "在對手的所有備戰寶可夢身上放置傷害指示物直到各自的剩餘HP變為「100」為止。"
+   }
+  ],
+  "weak": "D",
+  "resist": "F",
+  "retreat": 4,
+  "ex": true,
+  "from": "沙丘娃"
+ },
+ {
+  "id": "SV8-124",
+  "set": "SV8",
+  "name": "三首惡龍ex",
+  "officialId": 11477,
+  "cat": "P",
+  "stage": 2,
+  "hp": 330,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "粉碎頭",
+    "cost": [
+     "D",
+     "C"
+    ],
+    "dmg": "200",
+    "text": "將對手的牌庫上方3張卡丟棄。"
+   },
+   {
+    "name": "黑曜石",
+    "cost": [
+     "P",
+     "D",
+     "M",
+     "C"
+    ],
+    "dmg": "130",
+    "text": "對手的2隻備戰寶可夢也各受到130點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 3,
+  "ex": true,
+  "from": "雙首暴龍"
+ },
+ {
+  "id": "SV8-125",
+  "set": "SV8",
+  "name": "米立龍ex",
+  "officialId": 11478,
+  "cat": "P",
+  "stage": 0,
+  "hp": 160,
+  "type": "N",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "突襲水泵",
+    "cost": [
+     "R",
+     "W"
+    ],
+    "dmg": "100",
+    "text": "這個招式的傷害不計算對手的戰鬥寶可夢身上的附加效果。"
+   },
+   {
+    "name": "硃砂誘餌",
+    "cost": [
+     "R",
+     "W",
+     "D"
+    ],
+    "dmg": "",
+    "text": "查看自己的牌庫上方10張卡，從其中選擇任意數量的寶可夢卡，放置於備戰區。將剩餘卡放回牌庫並重洗。"
+   }
+  ],
+  "weak": null,
+  "resist": null,
+  "retreat": 1,
+  "ex": true
+ },
+ {
+  "id": "SV8-126",
+  "set": "SV8",
+  "name": "請假王ex",
+  "officialId": 11479,
+  "cat": "P",
+  "stage": 2,
+  "hp": 340,
+  "type": "C",
+  "abilities": [
+   {
+    "name": "懶怠個性",
+    "text": "若對手的場上沒有「寶可夢【ex】・【V】」，則這隻寶可夢無法使用招式。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "偉大橫掃",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "280",
+    "text": "選擇1個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 4,
+  "ex": true,
+  "from": "過動猿"
+ },
+ {
+  "id": "SV8-127",
+  "set": "SV8",
+  "name": "席藍",
+  "officialId": 11480,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "從自己的牌庫選擇最多3張「寶可夢【ex】」卡，在給對手看過後加入手牌。並且重洗牌庫。"
+ },
+ {
+  "id": "SV8-128",
+  "set": "SV8",
+  "name": "希特隆的機智",
+  "officialId": 11481,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "將自己的所有【雷】寶可夢各恢復「60」HP。"
+ },
+ {
+  "id": "SV8-129",
+  "set": "SV8",
+  "name": "阿蜜的目光",
+  "officialId": 11482,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "在下個對手的回合，自己的所有寶可夢受到對手的寶可夢招式的傷害「-30」點。（包含新上場的寶可夢。）"
+ },
+ {
+  "id": "SV8-130",
+  "set": "SV8",
+  "name": "鐵蟻ex",
+  "officialId": 11483,
+  "cat": "P",
+  "stage": 0,
+  "hp": 190,
+  "type": "G",
+  "abilities": [
+   {
+    "name": "突然削退",
+    "text": "在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將對手的牌庫上方1張卡丟棄。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "復仇粉碎",
+    "cost": [
+     "G",
+     "C",
+     "C"
+    ],
+    "dmg": "120+",
+    "text": "增加對手已經獲得的獎賞卡的張數×30點傷害。"
+   }
+  ],
+  "weak": "R",
+  "resist": null,
+  "retreat": 2,
+  "ex": true
+ },
+ {
+  "id": "SV8-131",
+  "set": "SV8",
+  "name": "美納斯ex",
+  "officialId": 11484,
+  "cat": "P",
+  "stage": 1,
+  "hp": 270,
+  "type": "W",
+  "abilities": [
+   {
+    "name": "璀璨鱗片",
+    "text": "這隻寶可夢不會受到對手的「太晶」寶可夢招式的傷害與效果的影響。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "昏睡飛濺",
+    "cost": [
+     "W",
+     "C",
+     "C"
+    ],
+    "dmg": "160",
+    "text": "將對手的戰鬥寶可夢【睡眠】。"
+   }
+  ],
+  "weak": "L",
+  "resist": null,
+  "retreat": 2,
+  "ex": true,
+  "from": "醜醜魚"
+ },
+ {
+  "id": "SV8-132",
+  "set": "SV8",
+  "name": "皮卡丘ex",
+  "officialId": 11485,
+  "cat": "P",
+  "stage": 0,
+  "hp": 200,
+  "type": "L",
+  "abilities": [
+   {
+    "name": "勤奮之心",
+    "text": "這隻寶可夢的HP是全滿的狀態下，這隻寶可夢受到招式的傷害而【昏厥】時，這隻寶可夢不會【昏厥】，而是以剩餘HP為「10」的狀態留在場上。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "黃玉伏特",
+    "cost": [
+     "G",
+     "L",
+     "M"
+    ],
+    "dmg": "300",
+    "text": "選擇3個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": true
+ },
+ {
+  "id": "SV8-133",
+  "set": "SV8",
+  "name": "三首惡龍ex",
+  "officialId": 11486,
+  "cat": "P",
+  "stage": 2,
+  "hp": 330,
+  "type": "D",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "粉碎頭",
+    "cost": [
+     "D",
+     "C"
+    ],
+    "dmg": "200",
+    "text": "將對手的牌庫上方3張卡丟棄。"
+   },
+   {
+    "name": "黑曜石",
+    "cost": [
+     "P",
+     "D",
+     "M",
+     "C"
+    ],
+    "dmg": "130",
+    "text": "對手的2隻備戰寶可夢也各受到130點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "G",
+  "resist": null,
+  "retreat": 3,
+  "ex": true,
+  "from": "雙首暴龍"
+ },
+ {
+  "id": "SV8-134",
+  "set": "SV8",
+  "name": "希特隆的機智",
+  "officialId": 11487,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "將自己的所有【雷】寶可夢各恢復「60」HP。"
+ },
+ {
+  "id": "SV8-135",
+  "set": "SV8",
+  "name": "阿蜜的目光",
+  "officialId": 11488,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "在下個對手的回合，自己的所有寶可夢受到對手的寶可夢招式的傷害「-30」點。（包含新上場的寶可夢。）"
+ },
+ {
+  "id": "SV8-136",
+  "set": "SV8",
+  "name": "皮卡丘ex",
+  "officialId": 11489,
+  "cat": "P",
+  "stage": 0,
+  "hp": 200,
+  "type": "L",
+  "abilities": [
+   {
+    "name": "勤奮之心",
+    "text": "這隻寶可夢的HP是全滿的狀態下，這隻寶可夢受到招式的傷害而【昏厥】時，這隻寶可夢不會【昏厥】，而是以剩餘HP為「10」的狀態留在場上。"
+   }
+  ],
+  "attacks": [
+   {
+    "name": "太晶",
+    "cost": [],
+    "dmg": "",
+    "text": "只要這隻寶可夢在備戰區，不會受到招式的傷害。"
+   },
+   {
+    "name": "黃玉伏特",
+    "cost": [
+     "G",
+     "L",
+     "M"
+    ],
+    "dmg": "300",
+    "text": "選擇3個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": true
+ },
+ {
+  "id": "SV8-137",
+  "set": "SV8",
+  "name": "夜間擔架",
+  "officialId": 11490,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "從自己的棄牌區選擇1張寶可夢卡或者基本能量卡，在給對手看過後加入手牌。"
+ },
+ {
+  "id": "SV8-138",
+  "set": "SV8",
+  "name": "引力山岳",
+  "officialId": 11491,
+  "cat": "T",
+  "trainer": "Stadium",
+  "text": "雙方場上所有【2階進化】寶可夢的最大HP各「-30」。"
+ }
+]

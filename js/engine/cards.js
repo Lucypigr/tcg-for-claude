@@ -17,6 +17,13 @@ export const isTrainer = c => c.cat === 'T';
 export const isEnergy = c => c.cat === 'E';
 export const isBasicEnergy = c => c.cat === 'E' && c.energy === 'basic';
 export const hasRule = c => c.cat === 'P' && (c.ex || c.mega);
+// 「古代」「未來」寶可夢（資料中沒有標記，依名稱判定）
+const ANCIENT = ['故勒頓', '振翼髮', '猛雷鼓', '轟鳴月', '吼叫尾', '爬地翅', '沙鐵皮', '猛惡菇', '雄偉牙', '破空焰', '鋒利岩'];
+const FUTURE = ['密勒頓', '鐵包袱', '鐵臂膀', '鐵蟻', '鐵毒蛾', '鐵荊棘', '鐵轍跡', '鐵頭殼', '鐵武者', '鐵斑葉', '鐵脖頸', '鐵火輝'];
+const baseName = c => c.name.replace(/ex$/, '');
+export const isAncient = c => c.cat === 'P' && ANCIENT.includes(baseName(c)) && c.name !== '帕底亞 土王';
+export const isFuture = c => c.cat === 'P' && FUTURE.includes(baseName(c));
+
 export const prizeValue = c => (c.mega ? 3 : c.ex ? 2 : 1);
 
 export function stageName(c) {

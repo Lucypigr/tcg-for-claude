@@ -1,6 +1,6 @@
 // 寶可夢集換式卡牌遊戲 對戰規則引擎
 // 所有玩家選擇皆透過 controller（真人UI或AI）以 async 方式取得
-import { cardData, isBasicPokemon, isBasicEnergy, isEnergy, isPokemon, prizeValue, TYPE_NAMES } from './cards.js';
+import { cardData, isBasicPokemon, isBasicEnergy, isEnergy, isPokemon, prizeValue, TYPE_NAMES, isFuture } from './cards.js';
 import { getAttackImpl, getAbilityImpl, getTrainerImpl, getEnergyImpl, getStadiumImpl, getToolImpl } from './effects.js';
 
 let UID = 1;
@@ -124,9 +124,28 @@ export class Game {
     return hp;
   }
   hpLeft(slot) { return this.maxHp(slot) - slot.damage; }
+  // 特性（考慮「黏著束縛」：備戰區的2階進化寶可夢特性消除）
+  abilityOf(slot) {
+    const c = this.top(slot);
+    const ab = getAbilityImpl(c);
+    if (!ab) return null;
+    if (c.stage === 2 && !this.isActive(slot) && this.players.some(p => p.bench.some(b => b !== slot && getAbilityImpl(this.top(b))?.benchStage2Lock))) return null;
+    return ab;
+  }
+  typesOf(slot) {
+    const ab = this.abilityOf(slot);
+    return ab?.types || [this.top(slot).type];
+  }
+  // 「純樸」：不受對手招式的效果影響
+  effectBlocked(slot) {
+    return !!(this.inAttack && this.ownerOf(slot) !== this.me && this.abilityOf(slot)?.noEffects);
+  }
   hasEffect(slot, kind, pred = () => true) { return slot.effects.some(e => e.kind === kind && e.turn === this.turn && pred(e)); }
   playerEffect(p, kind) { return p.effects.filter(e => e.kind === kind && e.turn === this.turn); }
-  addEffect(slot, eff) { slot.effects.push(eff); }
+  addEffect(slot, eff) {
+    if (this.effectBlocked(slot)) { this.log(`${this.top(slot).name}不受招式的效果影響！`); return; }
+    slot.effects.push(eff);
+  }
 
   // 能量提供：回傳屬性陣列，'*' 表示任意屬性
   energyUnits(slot) {
@@ -162,7 +181,7 @@ export class Game {
     const p = this.ownerOf(slot);
     let cost = this.top(slot).retreat;
     for (const s of this.slots(p)) {
-      const ab = getAbilityImpl(this.top(s));
+      const ab = this.abilityOf(s);
       if (ab?.retreatCost) cost = ab.retreatCost(this, s, slot, cost);
     }
     return Math.max(0, cost);
@@ -180,13 +199,18 @@ export class Game {
     if (dmg <= 0) return 0;
     if (toActive) {
       if (attacker.tool && !opts.noModifiers) { const t = getToolImpl(this.card(attacker.tool)); if (t.damageBonus) dmg += t.damageBonus(this, attacker, target); }
+      for (const s of this.slots(attackerOwner)) { const ab = this.abilityOf(s); if (ab?.attackBonus) dmg += ab.attackBonus(this, s, attacker, target); }
       for (const e of attacker.effects) if (e.kind === 'attackMinus' && e.turn === this.turn) dmg -= e.amount;
-      if (!opts.noWeakness && defCard.weak && defCard.weak === atkCard.type) dmg *= 2;
-      if (!opts.noResistance && defCard.resist && defCard.resist === atkCard.type) dmg -= 30;
+      const atkTypes = this.typesOf(attacker);
+      const weak = this.hasEffect(target, 'weakC') ? 'C' : defCard.weak;
+      if (!opts.noWeakness && weak && atkTypes.includes(weak)) dmg *= 2;
+      if (!opts.noResistance && defCard.resist && atkTypes.includes(defCard.resist)) dmg -= 30;
       if (!opts.noModifiers) {
-        for (const e of target.effects) if (e.kind === 'reduceDamage' && e.turn === this.turn) dmg -= e.amount;
-        for (const e of this.playerEffect(defOwner, 'reduceDamage')) dmg -= e.amount;
-        const ab = getAbilityImpl(defCard);
+        if (!opts.ignoreEffects) {
+          for (const e of target.effects) if (e.kind === 'reduceDamage' && e.turn === this.turn) dmg -= e.amount;
+          for (const e of this.playerEffect(defOwner, 'reduceDamage')) dmg -= e.amount;
+        }
+        const ab = this.abilityOf(target);
         if (ab?.reduceDamage) dmg -= ab.reduceDamage(this, target, attacker);
         if (target.tool) { const t = getToolImpl(this.card(target.tool)); if (t.reduceDamage) dmg -= t.reduceDamage(this, target, attacker); }
       }
@@ -195,9 +219,12 @@ export class Game {
     }
     return Math.max(0, dmg);
   }
-  isProtected(target, attacker) {
-    if (this.hasEffect(target, 'preventDamage')) return true;
-    if (this.hasEffect(target, 'preventAll')) return true;
+  isProtected(target, attacker, opts = {}) {
+    if (!opts.ignoreEffects && (this.hasEffect(target, 'preventDamage') || this.hasEffect(target, 'preventAll'))) return true;
+    const atkCard = this.top(attacker);
+    if (this.abilityOf(target)?.teraImmune && atkCard.tera) return true;
+    const defOwner = this.ownerOf(target);
+    if (atkCard.ex && isFuture(this.top(target)) && this.playerEffect(defOwner, 'futureExShield').some(e => defOwner.active?.id === e.source)) return true;
     return false;
   }
   // 由招式造成傷害（含效果）；回傳實際傷害
@@ -207,15 +234,23 @@ export class Game {
       target.damage += base;
       return base;
     }
-    if (this.isProtected(target, attacker)) { this.log(`${this.top(target).name}不受招式的傷害影響！`); return 0; }
-    const dmg = this.attackDamage(attacker, target, base, opts);
+    if (this.isProtected(target, attacker, opts)) { this.log(`${this.top(target).name}不受招式的傷害影響！`); return 0; }
+    let dmg = this.attackDamage(attacker, target, base, opts);
+    const dab = this.abilityOf(target);
+    if (dmg > 0 && dab?.evade && this.coin(this.ownerOf(target), this.top(target).abilities[0]?.name)) { this.log(`${this.top(target).name}躲開了攻擊！`); return 0; }
+    if (dmg > 0 && dab?.sturdy && target.damage === 0 && dmg >= this.maxHp(target)) { dmg = this.maxHp(target) - 10; this.log(`${this.top(target).name}以「${this.top(target).abilities[0].name}」撐住了！`); }
+    if (dmg > 0 && target.tool) {
+      const t = getToolImpl(this.card(target.tool));
+      if (t.consumeWhen?.(this, target, attacker)) { this.ownerOf(target).discard.push(target.tool); this.log(`${this.card(target.tool).name}發揮效果後被丟棄`); target.tool = null; }
+    }
     if (dmg > 0) {
       target.damage += dmg;
+      for (const e of target.effects) if (e.kind === 'counterAttack' && e.turn === this.turn) { attacker.damage += e.n * 10; this.log(`在${this.top(attacker).name}身上放置${e.n}個傷害指示物`, 'dmg'); }
       this.log(`${this.top(target).name}受到${dmg}點傷害`, 'dmg');
       this.emit('damage', { slot: target.id, amount: dmg });
       const defOwner = this.ownerOf(target);
       if (defOwner.active === target) {
-        const ab = getAbilityImpl(this.top(target));
+        const ab = this.abilityOf(target);
         if (ab?.onDamagedActive) ab.onDamagedActive(this, target, attacker);
         if (target.tool) { const t = getToolImpl(this.card(target.tool)); if (t.onDamagedActive) t.onDamagedActive(this, target, attacker); }
       }
@@ -224,7 +259,7 @@ export class Game {
   }
   placeCounters(target, n) {
     if (n <= 0) return;
-    if (this.hasEffect(target, 'preventAll')) { this.log(`${this.top(target).name}不受招式的效果影響！`); return; }
+    if (this.hasEffect(target, 'preventAll') || this.effectBlocked(target)) { this.log(`${this.top(target).name}不受招式的效果影響！`); return; }
     target.damage += n * 10;
     this.log(`在${this.top(target).name}身上放置${n}個傷害指示物`, 'dmg');
     this.emit('damage', { slot: target.id, amount: n * 10 });
@@ -237,7 +272,8 @@ export class Game {
   }
   setCondition(slot, cond) {
     const c = this.top(slot);
-    const ab = getAbilityImpl(c);
+    const ab = this.abilityOf(slot);
+    if (this.effectBlocked(slot)) { this.log(`${c.name}不受招式的效果影響！`); return; }
     if (ab?.immune?.includes(cond)) { this.log(`${c.name}不會${COND_NAMES[cond]}`); return; }
     if (slot.energy.some(e => getEnergyImpl(this.card(e))?.immune?.includes(cond))) { this.log(`${c.name}不會${COND_NAMES[cond]}`); return; }
     if (this.hasEffect(slot, 'preventAll')) return;
@@ -295,11 +331,17 @@ export class Game {
             this.log(`${p.name}的${c.name}昏厥了！`, 'ko');
             this.emit('ko', { slot: slot.id });
             p.lastKoTurn = this.turn;
-            if (attackCtx && attackCtx.attackerOwner !== p) p.lastKoByAttackTypes.push({ turn: this.turn, type: c.type });
+            const byOppAttack = attackCtx && attackCtx.attackerOwner !== p;
+            if (byOppAttack) p.lastKoByAttackTypes.push({ turn: this.turn, type: c.type });
+            const wasActive = p.active === slot;
+            const tool = slot.tool ? getToolImpl(this.card(slot.tool)) : null;
             this.discardSlot(p, slot);
             const taker = this.opp(p);
             let n = prizeValue(c);
             if (attackCtx?.extraPrize && attackCtx.attackerOwner === taker) n += attackCtx.extraPrize;
+            // 「奇跡之吻」
+            if (wasActive && this.slots(taker).some(s => this.abilityOf(s)?.miracleKiss) && this.coin(taker, '奇跡之吻')) { n++; this.log('「奇跡之吻」多獲得1張獎賞卡！'); }
+            if (byOppAttack && tool?.onKO) await tool.onKO(this, p);
             await this.takePrizes(taker, n);
           }
         }
@@ -417,7 +459,12 @@ export class Game {
       const s = pl.active;
       if (!s) continue;
       const name = this.top(s).name;
-      if (s.cond.poison) { s.damage += 10; this.log(`${name}因中毒受到10點傷害`, 'cond'); }
+      if (s.cond.poison) {
+        const oa = this.opp(pl).active;
+        const extra = oa && this.abilityOf(oa)?.poisonBoost ? this.abilityOf(oa).poisonBoost : 0;
+        s.damage += 10 + extra * 10;
+        this.log(`${name}因中毒受到${10 + extra * 10}點傷害`, 'cond');
+      }
       if (s.cond.burn) {
         s.damage += 20; this.log(`${name}因灼傷受到20點傷害`, 'cond');
         if (this.coin(pl, '灼傷')) { delete s.cond.burn; this.log(`${name}的灼傷恢復了`); }
@@ -447,7 +494,7 @@ export class Game {
           }
         }
       } else if (isEnergy(c)) {
-        if (!p.energyAttached) for (const s of this.slots(p)) acts.push({ type: 'energy', uid: inst.uid, target: s.id });
+        if (!p.energyAttached) for (const s of this.slots(p)) if (!this.hasEffect(s, 'noEnergyAttach')) acts.push({ type: 'energy', uid: inst.uid, target: s.id });
       } else {
         const impl = getTrainerImpl(c);
         if (c.trainer === 'Supporter' && (p.supporterPlayed || (this.turn === 1 && !impl.firstTurnOk))) continue;
@@ -462,7 +509,7 @@ export class Game {
     }
     for (const s of this.slots(p)) {
       const c = this.top(s);
-      const ab = getAbilityImpl(c);
+      const ab = this.abilityOf(s);
       if (ab?.use && !(ab.oncePerTurn !== false && p.abilityUsed[`${s.id}:${ab.key || c.id}`]) && !(ab.globalKey && p.abilityUsed[ab.globalKey])) {
         if (!ab.canUse || ab.canUse(this, p, s)) acts.push({ type: 'ability', target: s.id });
       }
@@ -492,6 +539,9 @@ export class Game {
     const atk = c.attacks[idx];
     if (!this.canPay(this.attackCost(slot, atk), this.energyUnits(slot))) return false;
     if (this.hasEffect(slot, 'noAttack')) return false;
+    if (this.playerEffect(p, 'lowEnergyNoAttack').length && this.countEnergy(slot) <= 2) return false;
+    const sab = this.abilityOf(slot);
+    if (sab?.attackCondition && !sab.attackCondition(this, p, slot)) return false;
     if (this.hasEffect(slot, 'noAttackName', e => e.name === atk.name)) return false;
     const impl = getAttackImpl(c, idx);
     if (impl.canUse && !impl.canUse(this, p, slot)) return false;
@@ -506,8 +556,18 @@ export class Game {
       case 'bench': {
         const inst = this.findHand(p, act.uid);
         this.removeFromHand(p, inst);
-        this.putOnBench(p, inst);
+        const slot = this.putOnBench(p, inst);
         this.log(`${p.name}將${this.card(inst).name}放到備戰區`);
+        const ab = this.abilityOf(slot);
+        if (ab?.onBench && (!ab.canBench || ab.canBench(this, p, slot))) {
+          const c = this.card(inst);
+          const yes = await this.ask(p, { kind: 'yesno', title: `要使用「${c.abilities[0].name}」嗎？`, purpose: 'onEvolve', card: c.id });
+          if (yes) {
+            this.log(`${c.name}使用了特性「${c.abilities[0].name}」`, 'ability');
+            this.emit('ability', { slot: slot.id });
+            await ab.onBench(this, p, slot);
+          }
+        }
         return false;
       }
       case 'evolve': {
@@ -558,7 +618,7 @@ export class Game {
       case 'ability': {
         const s = this.findSlot(p, act.target);
         const c = this.top(s);
-        const ab = getAbilityImpl(c);
+        const ab = this.abilityOf(s);
         p.abilityUsed[`${s.id}:${ab.key || c.id}`] = true;
         if (ab.globalKey) p.abilityUsed[ab.globalKey] = true;
         this.log(`${p.name}的${c.name}使用了特性「${c.abilities[0]?.name}」`, 'ability');
@@ -606,7 +666,7 @@ export class Game {
     slot.effects = slot.effects.filter(e => e.persist);
     this.log(`${p.name}的${prev.name}進化成${c.name}`, 'evolve');
     this.emit('evolve', { slot: slot.id, cid: c.id, player: p.index });
-    const ab = getAbilityImpl(c);
+    const ab = this.abilityOf(slot);
     if (fromHand && ab?.onEvolve) {
       const yes = await this.ask(p, { kind: 'yesno', title: `要使用「${c.abilities[0].name}」嗎？`, purpose: 'onEvolve', card: c.id });
       if (yes) {
@@ -632,6 +692,14 @@ export class Game {
       }
     }
     a.lastAttack = { name: atk.name, turn: this.turn };
+    p.lastAttacker = { turn: this.turn, slot: a.id, card: c.id };
+    this.inAttack = true;
+    this.lastAttackCtx = null;
+    try { await this.resolveAttack(p, a, c, idx, atk, o); } finally { this.inAttack = false; }
+    await this.checkKnockouts(this.lastAttackCtx);
+  }
+
+  async resolveAttack(p, a, c, idx, atk, o) {
     const impl = getAttackImpl(c, idx);
     const ctx = {
       g: this, me: p, opp: o, attacker: a, defender: o.active, atk, card: c,
@@ -645,10 +713,9 @@ export class Game {
       if (ctx.base > 0 && ctx.defender && !ctx.noMainDamage) {
         ctx.dealt = this.dealAttackDamage(a, ctx.defender, ctx.base, ctx.opts);
       }
-      if (impl.after && p.active === a) await impl.after(ctx);
-      else if (impl.after && impl.afterEvenIfMoved) await impl.after(ctx);
+      if (impl.after) await impl.after(ctx);
     }
-    await this.checkKnockouts(ctx);
+    this.lastAttackCtx = ctx;
   }
 }
 

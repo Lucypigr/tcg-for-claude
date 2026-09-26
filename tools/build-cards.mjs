@@ -150,11 +150,31 @@ for (const c of CUSTOM_CARDS) cards.push(c);
 // 從台灣官方訓練家網站抓取的擴充包（tools/scrape-official.mjs 產生的 tools/official/*.json）
 const officialDir = path.join(here, 'official');
 const officialIds = {};
+// 尚未支援的卡：招式學習器（賦予招式的道具）
+const EXCLUDE = ['SV8-101'];
 if (fs.existsSync(officialDir)) {
   for (const f of fs.readdirSync(officialDir).filter(f => f.endsWith('.json')).sort()) {
     for (const raw of JSON.parse(fs.readFileSync(path.join(officialDir, f), 'utf8'))) {
       if (raw.cat === 'E' && raw.energy === 'basic') continue; // 基本能量沿用 SVD 版本
+      if (EXCLUDE.includes(raw.id)) continue;
       const { officialId, ...c } = raw;
+      if (seen.has(c.id)) { officialIds[c.id] = officialId; continue; } // 已由 tcgdex 資料收錄
+      seen.add(c.id);
+      // 官網部分特性沒有「[特性]」標記：無能量、無傷害的項目視為特性；「太晶」為規則
+      if (c.cat === 'P') {
+        for (const a of [...c.attacks]) {
+          if (a.cost.length || a.dmg) continue;
+          c.attacks = c.attacks.filter(x => x !== a);
+          if (a.name === '太晶') c.tera = true;
+          else if (a.text && !/^(擲|從|將|對手|查看|在|選擇)/.test(a.text) || /這隻寶可夢不會受到|只要這隻寶可夢/.test(a.text)) c.abilities.push({ name: a.name, text: a.text });
+          else c.attacks.push(a);
+        }
+      }
+      // 稀有度：優先使用 tcgdex 的資料
+      const num = c.id.split('-')[1];
+      const tfile = path.join(root, 'SV', c.set, `${num}.ts`);
+      if (fs.existsSync(tfile)) { try { const t = load(`SV/${c.set}/${num}.ts`); if (RARITY[t.rarity]) c.rarity = RARITY[t.rarity]; } catch { /* ignore */ } }
+      if (!c.rarity && +num > 0 && c.set === 'SV8' && +num > 106) c.rarity = c.cat === 'P' && c.ex ? 'SR' : 'R';
       c.rarity = c.rarity || defaultRarity(c);
       officialIds[c.id] = officialId;
       cards.push(c);
@@ -171,7 +191,7 @@ const final = [];
 const aliases = {}; // 被合併的重複卡 → 保留的卡片ID
 for (const c of cards) {
   const s = sig(c);
-  if (bySig.has(s)) { aliases[c.id] = bySig.get(s); continue; }
+  if (bySig.has(s)) { if (bySig.get(s) !== c.id) aliases[c.id] = bySig.get(s); continue; }
   bySig.set(s, c.id);
   final.push(c);
 }

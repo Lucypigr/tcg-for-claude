@@ -8,7 +8,10 @@ const STAPLES = ['SVD-117', 'SVD-118', 'SVD-119', 'SVD-120', 'SVD-122', 'SVD-129
 
 const notEnergy = c => !isBasicEnergy(c);
 const basicPool = CARDS.filter(c => STARTER_SETS.has(c.set) && notEnergy(c));
-const metaPool = CARDS.filter(c => (!STARTER_SETS.has(c.set) || STAPLES.includes(c.id)) && notEnergy(c));
+// 超電突圍中原本就收錄於環境包的卡
+const SV8_META = ['SV8-034', 'SV8-035', 'SV8-036', 'SV8-095', 'SV8-102', 'SV8-103', 'SV8-104', 'SV8-105', 'SV8-106'];
+const metaPool = CARDS.filter(c => ((!STARTER_SETS.has(c.set) && c.set !== 'SV8') || STAPLES.includes(c.id) || SV8_META.includes(c.id)) && notEnergy(c));
+const sv8Pool = CARDS.filter(c => c.set === 'SV8' && notEnergy(c));
 const exPool = CARDS.filter(c => notEnergy(c) && (c.rarity !== 'C'));
 
 export const PACKS = [
@@ -31,6 +34,16 @@ export const PACKS = [
     color: '#7a4bd6',
     pool: metaPool,
     slots: [{ C: 1 }, { C: 0.5, U: 0.5 }, { U: 1 }, { U: 0.6, R: 0.4 }, { R: 0.55, RR: 0.33, ACE: 0.08, SR: 0.04 }],
+  },
+  {
+    id: 'sv8',
+    name: '超電突圍 擴充包',
+    desc: '台灣官方擴充包「超電突圍」(SV8) 全卡收錄：皮卡丘ex、請假王ex、三首惡龍ex、噬沙堡爺ex、米立龍ex等。',
+    price: 250,
+    size: 5,
+    color: '#f2b705',
+    pool: sv8Pool,
+    slots: [{ C: 1 }, { C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { R: 0.6, RR: 0.33, ACE: 0.07 }],
   },
   {
     id: 'ex',

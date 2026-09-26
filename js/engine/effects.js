@@ -1,5 +1,5 @@
 // 卡片效果：招式文字自動編譯 + 手動實作的特性/訓練家/能量
-import { cardData, isBasicEnergy, isBasicPokemon, isPokemon, hasRule } from './cards.js';
+import { cardData, isBasicEnergy, isBasicPokemon, isPokemon, hasRule, isAncient, prizeValue } from './cards.js';
 import { CARDS } from '../data/cards.js';
 
 const T2L = { 草: 'G', 火: 'R', 水: 'W', 雷: 'L', 超: 'P', 鬥: 'F', 惡: 'D', 鋼: 'M', 龍: 'N', 無: 'C' };
@@ -64,6 +64,97 @@ const isType = (c, t) => c.cat === 'P' && c.type === t;
 // after(ctx) 在造成傷害後執行
 // est(base, env) 供 AI 估算期望傷害
 const PATTERNS = [
+  // ---- 超電突圍 追加句型 ----
+  [/^若自己的牌庫的剩餘張數為(\d+)張以下，則增加(\d+)點傷害$/, m => ({
+    before: ctx => { if (ctx.me.deck.length <= +m[1]) ctx.base += +m[2]; },
+    est: (b, e) => b + (e.me.deck.length <= +m[1] ? +m[2] : 0),
+  })],
+  [/^將自己的牌庫上方(\d+)張卡丟棄$/, m => ({
+    after: ctx => { const t = ctx.me.deck.splice(0, +m[1]); ctx.me.discard.push(...t); if (t.length) ctx.g.log(`${ctx.me.name}丟棄了牌庫上方${t.length}張卡`); },
+  })],
+  [/^將對手的牌庫上方(\d+)張卡丟棄$/, m => ({
+    after: ctx => { const t = ctx.opp.deck.splice(0, +m[1]); ctx.opp.discard.push(...t); if (t.length) ctx.g.log(`丟棄了對手牌庫上方${t.length}張卡`); },
+  })],
+  [/^若對手的戰鬥寶可夢為【(\d)階進化】寶可夢，則增加(\d+)點傷害$/, m => ({
+    before: ctx => { if (ctx.defender && ctx.g.top(ctx.defender).stage === +m[1]) ctx.base += +m[2]; },
+    est: (b, e) => b + (e.def && e.g.top(e.def).stage === +m[1] ? +m[2] : 0),
+  })],
+  [/^將這隻寶可夢恢復對對手的戰鬥寶可夢造成的傷害相同數值的HP$/, () => ({
+    after: ctx => { if (ctx.dealt) ctx.g.heal(ctx.attacker, ctx.dealt); },
+  })],
+  [/^增加雙方的備戰寶可夢的數量×(\d+)點傷害$/, m => ({
+    before: ctx => { ctx.base += (ctx.me.bench.length + ctx.opp.bench.length) * +m[1]; },
+    est: (b, e) => b + (e.me.bench.length + e.g.opp(e.me).bench.length) * +m[1],
+  })],
+  [/^減少對手的戰鬥寶可夢【撤退】所需的能量的數量×(\d+)點傷害$/, m => ({
+    before: ctx => { if (ctx.defender) ctx.base = Math.max(0, ctx.base - ctx.g.retreatCost(ctx.defender) * +m[1]); },
+    est: (b, e) => (e.def ? Math.max(0, b - e.g.retreatCost(e.def) * +m[1]) : b),
+  })],
+  [/^選擇1個這隻寶可夢身上附加的能量，放回手牌$/, () => ({
+    after: async ctx => {
+      const [e] = await pick(ctx.g, ctx.me, [...ctx.attacker.energy], { min: 1, max: 1, title: '選擇要放回手牌的能量', purpose: 'discardOwnEnergy' });
+      if (!e) return;
+      ctx.attacker.energy = ctx.attacker.energy.filter(x => x !== e);
+      ctx.me.hand.push(e);
+    },
+  })],
+  [/^造成對手的戰鬥寶可夢身上附加的能量的數量×(\d+)點傷害$/, m => ({
+    before: ctx => { ctx.base = ctx.defender ? ctx.g.countEnergy(ctx.defender) * +m[1] : 0; },
+    est: (b, e) => (e.def ? e.g.countEnergy(e.def) * +m[1] : 0),
+  })],
+  [/^從自己的牌庫選擇最多(\d+)張【(.)】寶可夢卡，在給對手看過後加入手牌$/, m => ({
+    after: ctx => searchDeck(ctx.g, ctx.me, c => c.cat === 'P' && c.type === T2L[m[2]], { max: +m[1], title: `選擇最多${m[1]}張${m[2]}寶可夢`, purpose: 'searchPokemon' }),
+  })],
+  [/^若自己剩餘獎賞卡的張數，比對手剩餘獎賞卡的張數多，則增加(\d+)點傷害$/, m => ({
+    before: ctx => { if (ctx.me.prizes.length > ctx.opp.prizes.length) ctx.base += +m[1]; },
+    est: (b, e) => b + (e.me.prizes.length > e.g.opp(e.me).prizes.length ? +m[1] : 0),
+  })],
+  [/^在對手的所有寶可夢身上各放置(\d+)個傷害指示物$/, m => ({
+    after: ctx => { for (const s of ctx.g.slots(ctx.opp)) ctx.g.placeCounters(s, +m[1]); },
+    est: b => b + +m[1] * 10,
+  })],
+  [/^增加對手的所有寶可夢身上放置的傷害指示物的數量×(\d+)點傷害$/, m => ({
+    before: ctx => { ctx.base += ctx.g.slots(ctx.opp).reduce((n, s) => n + s.damage / 10, 0) * +m[1]; },
+    est: (b, e) => b + e.g.slots(e.g.opp(e.me)).reduce((n, s) => n + s.damage / 10, 0) * +m[1],
+  })],
+  [/^從自己的棄牌區選擇1張訓練家卡，在給對手看過後加入手牌$/, () => ({
+    after: async ctx => moveDiscardToHand(ctx.g, ctx.me, await pick(ctx.g, ctx.me, ctx.me.discard.filter(i => card(ctx.g, i).cat === 'T'), { max: 1, title: '選擇1張訓練家卡', purpose: 'recoverItem' })),
+  })],
+  [/^這個招式的傷害不計算對手的戰鬥寶可夢身上的附加效果$/, () => ({ opts: { ignoreEffects: true } })],
+  [/^在下個對手的回合，受到這個招式的寶可夢，無法附上從手牌使出的能量卡$/, () => ({
+    after: ctx => { if (ctx.defender && ctx.opp.active === ctx.defender) ctx.g.addEffect(ctx.defender, { kind: 'noEnergyAttach', turn: ctx.g.turn + 1 }); },
+  })],
+  [/^造成對手的所有寶可夢身上附加的能量的數量×(\d+)點傷害$/, m => ({
+    before: ctx => { ctx.base = ctx.g.slots(ctx.opp).reduce((n, s) => n + ctx.g.countEnergy(s), 0) * +m[1]; },
+    est: (b, e) => e.g.slots(e.g.opp(e.me)).reduce((n, s) => n + e.g.countEnergy(s), 0) * +m[1],
+  })],
+  [/^若自己的手牌不是(\d+)張，則這個招式失敗$/, m => ({
+    before: ctx => ctx.me.hand.length === +m[1],
+    canUse: (g, p) => p.hand.length === +m[1],
+  })],
+  [/^若對手的戰鬥寶可夢為「寶可夢【ex】」，則增加(\d+)點傷害$/, m => ({
+    before: ctx => { if (ctx.defender && ctx.g.top(ctx.defender).ex) ctx.base += +m[1]; },
+    est: (b, e) => b + (e.def && e.g.top(e.def).ex ? +m[1] : 0),
+  })],
+  [/^在下個自己的回合，這隻寶可夢無法撤退$/, () => ({
+    after: ctx => ctx.g.addEffect(ctx.attacker, { kind: 'noRetreat', turn: ctx.g.turn + 2 }),
+  })],
+  [/^在下個對手的回合，這隻寶可夢受到招式的傷害時，在使用招式的寶可夢身上放置(\d+)個傷害指示物$/, m => ({
+    after: ctx => ctx.g.addEffect(ctx.attacker, { kind: 'counterAttack', n: +m[1], turn: ctx.g.turn + 1 }),
+  })],
+  [/^從自己的牌庫選擇最多(\d+)張能量卡，在給對手看過後加入手牌$/, m => ({
+    after: ctx => searchDeck(ctx.g, ctx.me, c => c.cat === 'E', { max: +m[1], title: `選擇最多${m[1]}張能量卡`, purpose: 'searchEnergy' }),
+  })],
+  [/^在下個自己的回合結束前，受到這個招式的寶可夢弱點改爲【無】屬性$/, () => ({
+    after: ctx => {
+      if (!ctx.defender || ctx.opp.active !== ctx.defender) return;
+      ctx.g.addEffect(ctx.defender, { kind: 'weakC', turn: ctx.g.turn + 1 });
+      ctx.g.addEffect(ctx.defender, { kind: 'weakC', turn: ctx.g.turn + 2 });
+    },
+  })],
+  [/^在下個對手的回合，這隻寶可夢受到招式的傷害「-(\d+)」點$/, m => ({
+    after: ctx => ctx.g.addEffect(ctx.attacker, { kind: 'reduceDamage', amount: +m[1], turn: ctx.g.turn + 1 }),
+  })],
   [/^擲1次硬幣若為反面，則這個招式失敗$/, () => ({
     before: ctx => { ctx.data.coin = ctx.g.coin(ctx.me); return ctx.data.coin; },
     est: b => b / 2,
@@ -407,6 +498,186 @@ export function getProvides(g, inst, slot) {
 
 // 無法以句型處理的招式，以完整文字為鍵
 const MANUAL_ATTACKS = {
+  // ---- 超電突圍 ----
+  '擲與雙方的戰鬥寶可夢身上附加的能量的數量相同次數的硬幣，造成正面出現的次數×60點傷害。': {
+    before: ctx => {
+      const n = ctx.g.countEnergy(ctx.attacker) + (ctx.defender ? ctx.g.countEnergy(ctx.defender) : 0);
+      let h = 0; for (let i = 0; i < n; i++) if (ctx.g.coin(ctx.me)) h++;
+      ctx.base = h * 60;
+    },
+    est: (b, e) => (e.g.countEnergy(e.slot) + (e.def ? e.g.countEnergy(e.def) : 0)) * 30,
+  },
+  '從自己的牌庫，選擇自己的所有備戰寶可夢進化而來的卡各1張，放置於各自身上完成進化。並且重洗牌庫。': {
+    after: async ctx => {
+      const g = ctx.g, p = ctx.me;
+      for (const s of [...p.bench]) {
+        const t = g.top(s);
+        const cands = p.deck.filter(i => { const c = card(g, i); return c.cat === 'P' && c.from === t.name; });
+        if (!cands.length) continue;
+        const [inst] = await pick(g, p, cands, { max: 1, title: `選擇要讓${t.name}進化的卡`, purpose: 'searchEvolution' });
+        if (!inst) continue;
+        fromDeck(g, p, [inst]);
+        p.hand.push(inst);
+        await g.evolve(p, s, inst, false);
+      }
+      g.shuffle(p.deck);
+    },
+  },
+  '若自己的牌庫的剩餘張數為3張以下，則對手的2隻備戰寶可夢也各受到120點傷害。[在備戰區不計算弱點・抵抗力。]': {
+    after: async ctx => {
+      if (ctx.me.deck.length > 3 || !ctx.opp.bench.length) return;
+      const ch = await ctx.g.ask(ctx.me, { kind: 'slots', title: '選擇2隻對手的備戰寶可夢', slots: benchOf(ctx.opp), min: Math.min(2, ctx.opp.bench.length), max: 2, purpose: 'benchDamage', target: ctx.opp.index });
+      for (const s of ch || []) ctx.g.dealAttackDamage(ctx.attacker, s, 120);
+    },
+  },
+  '將這隻寶可夢身上附加的【火】能量卡全部丟棄，對手的1隻備戰寶可夢受到180點傷害。[在備戰區不計算弱點・抵抗力。]': {
+    before: ctx => { ctx.noMainDamage = true; },
+    after: async ctx => {
+      for (const e of [...ctx.attacker.energy]) if (card(ctx.g, e).provides === 'R') ctx.g.discardEnergy(ctx.attacker, e);
+      const s = await pickSlot(ctx.g, ctx.me, benchOf(ctx.opp), { title: '選擇要受到180點傷害的對手備戰寶可夢', purpose: 'snipe', target: ctx.opp.index });
+      if (s) ctx.g.dealAttackDamage(ctx.attacker, s, 180);
+    },
+  },
+  '將對手的所有寶可夢身上附加的特殊能量卡全部丟棄。': {
+    after: ctx => { for (const s of ctx.g.slots(ctx.opp)) for (const e of [...s.energy]) if (card(ctx.g, e).energy === 'special') ctx.g.discardEnergy(s, e); },
+  },
+  '若希望，選擇2個對手的戰鬥場的【2階進化】寶可夢身上附加的能量，放回對手的手牌。': {
+    after: async ctx => {
+      const d = ctx.opp.active;
+      if (!d || ctx.g.top(d).stage !== 2 || !d.energy.length) return;
+      const ch = await pick(ctx.g, ctx.me, [...d.energy], { min: 0, max: 2, title: '選擇最多2個要放回對手手牌的能量', purpose: 'discardOppEnergy' });
+      for (const e of ch) { d.energy = d.energy.filter(x => x !== e); ctx.opp.hand.push(e); }
+    },
+  },
+  '在下個對手的回合，身上附加的能量為2個以下的所有寶可夢無法使用招式。（包含新上場的寶可夢。）': {
+    after: ctx => { ctx.opp.effects.push({ kind: 'lowEnergyNoAttack', turn: ctx.g.turn + 1 }); ctx.g.log('下個對手的回合，能量2個以下的寶可夢無法使用招式'); },
+  },
+  '查看對手的手牌，將其中的「物品」卡與「寶可夢道具」卡全部丟棄。': {
+    after: ctx => {
+      const out = ctx.opp.hand.filter(i => ['Item', 'Tool'].includes(card(ctx.g, i).trainer));
+      ctx.opp.hand = ctx.opp.hand.filter(i => !out.includes(i));
+      ctx.opp.discard.push(...out);
+      ctx.g.log(out.length ? `丟棄了對手手牌中的${out.map(i => card(ctx.g, i).name).join('、')}` : '對手手牌中沒有物品或寶可夢道具');
+    },
+  },
+  '擲1次硬幣若為正面，則將對手的戰鬥寶可夢【麻痺】。再選擇1個那隻寶可夢身上附加的能量，將其丟棄。': {
+    after: async ctx => {
+      const d = ctx.opp.active;
+      if (!d || !ctx.g.coin(ctx.me)) return;
+      ctx.g.setCondition(d, 'paralyzed');
+      if (!d.energy.length || ctx.g.effectBlocked(d)) return;
+      const [e] = await pick(ctx.g, ctx.me, [...d.energy], { min: 1, max: 1, title: '選擇要丟棄的對手能量', purpose: 'discardOppEnergy' });
+      if (e) ctx.g.discardEnergy(d, e);
+    },
+  },
+  '將這隻寶可夢身上附加的所有能量卡，以任意方式改附於備戰寶可夢身上。': {
+    after: async ctx => {
+      const es = [...ctx.attacker.energy];
+      if (!es.length || !ctx.me.bench.length) return;
+      ctx.attacker.energy = [];
+      await attachEach(ctx.g, ctx.me, es, benchOf(ctx.me), '選擇要改附能量的備戰寶可夢');
+    },
+  },
+  '在下個對手的回合，自己的所有「未來」寶可夢不會受到「寶可夢【ex】」招式的傷害。若這隻寶可夢離開戰鬥場，則這個效果消除。': {
+    after: ctx => ctx.me.effects.push({ kind: 'futureExShield', turn: ctx.g.turn + 1, source: ctx.attacker.id }),
+  },
+  '從自己的手牌選擇最多2張「基本【超】能量」卡，以任意方式附於自己的寶可夢身上。': {
+    after: async ctx => {
+      const cands = ctx.me.hand.filter(i => { const c = card(ctx.g, i); return isBasicEnergy(c) && c.provides === 'P'; });
+      const ch = await pick(ctx.g, ctx.me, cands, { max: 2, title: '選擇最多2張基本超能量', purpose: 'searchEnergy' });
+      for (const e of ch) ctx.g.removeFromHand(ctx.me, e);
+      await attachEach(ctx.g, ctx.me, ch, ctx.g.slots(ctx.me), '選擇要附上超能量的寶可夢');
+    },
+  },
+  '若自己的備戰區沒有「由克希」「亞克諾姆」，則這個招式失敗。': {
+    before: ctx => ['由克希', '亞克諾姆'].every(n => ctx.me.bench.some(s => ctx.g.top(s).name === n)),
+    canUse: (g, p) => ['由克希', '亞克諾姆'].every(n => p.bench.some(s => g.top(s).name === n)),
+  },
+  '在雙方的所有擁有特性的寶可夢身上，各放置6個傷害指示物。': {
+    after: ctx => { for (const pl of ctx.g.players) for (const s of ctx.g.slots(pl)) if (ctx.g.top(s).abilities.length) ctx.g.placeCounters(s, 6); },
+  },
+  '查看對手的手牌。': {
+    after: ctx => ctx.g.log(`對手的手牌：${ctx.opp.hand.map(i => card(ctx.g, i).name).join('、') || '（沒有手牌）'}`),
+  },
+  '在對手的所有備戰寶可夢身上放置傷害指示物直到各自的剩餘HP變為「100」為止。': {
+    after: ctx => { for (const s of benchOf(ctx.opp)) { const n = Math.floor((ctx.g.hpLeft(s) - 100) / 10); if (n > 0) ctx.g.placeCounters(s, n); } },
+    est: (b, e) => benchOf(e.g.opp(e.me)).reduce((n, s) => n + Math.max(0, e.g.hpLeft(s) - 100), 0) / 2,
+  },
+  '選擇1隻自己的備戰區的「古代」寶可夢，將所選的寶可夢身上放置的傷害指示物，全部改放於對手的戰鬥寶可夢身上。': {
+    after: async ctx => {
+      const cands = ctx.me.bench.filter(s => isAncient(ctx.g.top(s)) && s.damage > 0);
+      const s = await pickSlot(ctx.g, ctx.me, cands, { title: '選擇古代寶可夢', purpose: 'healMost' });
+      if (!s || !ctx.opp.active) return;
+      const n = s.damage / 10;
+      s.damage = 0;
+      ctx.g.placeCounters(ctx.opp.active, n);
+    },
+  },
+  '將雙方的戰鬥寶可夢【昏厥】。': {
+    after: ctx => {
+      for (const s of [ctx.me.active, ctx.opp.active]) if (s && !(s === ctx.opp.active && ctx.g.effectBlocked(s))) s.damage = Math.max(s.damage, ctx.g.maxHp(s));
+    },
+  },
+  '在上個自己的回合，若這隻寶可夢以外的「古代」寶可夢使用了招式，則增加150點傷害。': {
+    before: ctx => {
+      const la = ctx.me.lastAttacker;
+      if (la && la.turn === ctx.g.turn - 2 && la.slot !== ctx.attacker.id && isAncient(cardData(la.card))) ctx.base += 150;
+    },
+  },
+  '從對手的棄牌區選擇最多3張能量卡，以任意方式附於對手的寶可夢身上。': {
+    after: async ctx => {
+      const ch = await pick(ctx.g, ctx.me, ctx.opp.discard.filter(i => card(ctx.g, i).cat === 'E'), { max: 3, title: '選擇最多3張對手的能量卡', purpose: 'discardEnergyToAttach' });
+      ctx.opp.discard = ctx.opp.discard.filter(i => !ch.includes(i));
+      for (const e of ch) {
+        const s = await pickSlot(ctx.g, ctx.me, ctx.g.slots(ctx.opp), { title: `選擇要附上${card(ctx.g, e).name}的對手寶可夢`, purpose: 'counterTarget', target: ctx.opp.index });
+        s.energy.push(e);
+      }
+    },
+  },
+  '將場上的競技場卡丟棄。若無法丟棄，則這個招式失敗。': {
+    before: ctx => {
+      const g = ctx.g;
+      if (!g.stadium) return false;
+      g.players[g.stadium.owner].discard.push(g.stadium.inst);
+      g.log(`競技場「${card(g, g.stadium.inst).name}」被丟棄了`);
+      g.stadium = null;
+    },
+    canUse: g => !!g.stadium,
+  },
+  '查看自己的牌庫上方10張卡，從其中選擇任意數量的寶可夢卡，放置於備戰區。將剩餘卡放回牌庫並重洗。': {
+    after: async ctx => {
+      const top = ctx.me.deck.slice(0, 10);
+      const ch = await pick(ctx.g, ctx.me, top.filter(i => isBasicPokemon(card(ctx.g, i))), { max: 5 - ctx.me.bench.length, title: '選擇要放到備戰區的基礎寶可夢', purpose: 'benchSearch', extra: { looked: top } });
+      fromDeck(ctx.g, ctx.me, ch);
+      for (const i of ch) ctx.g.putOnBench(ctx.me, i);
+      ctx.g.shuffle(ctx.me.deck);
+    },
+  },
+  '擲3次硬幣。若出現1次正面，則增加20點傷害。若出現2次正面，則增加50點傷害。若全部為正面，則增加80點傷害。': {
+    before: ctx => { let h = 0; for (let i = 0; i < 3; i++) if (ctx.g.coin(ctx.me)) h++; ctx.base += [0, 20, 50, 80][h]; },
+    est: b => b + 35,
+  },
+  '從自己的牌庫選擇最多2張「一家鼠（包含『寶可夢【ex】』）」，放置於備戰區。並且重洗牌庫。': {
+    after: ctx => searchDeck(ctx.g, ctx.me, c => /^一家鼠/.test(c.name), { max: Math.min(2, 5 - ctx.me.bench.length), title: '選擇最多2張一家鼠', purpose: 'benchSearch', dest: 'bench' }),
+  },
+  '從自己的牌庫選擇最多3張各不同屬性的基本能量卡，以任意方式附於自己的「太晶」寶可夢身上。並且重洗牌庫。': {
+    after: async ctx => {
+      const g = ctx.g, p = ctx.me;
+      const targets = g.slots(p).filter(s => g.top(s).tera);
+      if (!targets.length) return;
+      const got = [];
+      for (let i = 0; i < 3; i++) {
+        const used = got.map(e => card(g, e).provides);
+        const cands = p.deck.filter(x => { const c = card(g, x); return isBasicEnergy(c) && !used.includes(c.provides); });
+        const [e] = await pick(g, p, cands, { max: 1, title: `選擇不同屬性的基本能量（${i + 1}/3）`, purpose: 'searchEnergy' });
+        if (!e) break;
+        fromDeck(g, p, [e]);
+        got.push(e);
+      }
+      await attachEach(g, p, got, targets, '選擇要附上能量的太晶寶可夢');
+      g.shuffle(p.deck);
+    },
+  },
   '選擇1個對手的戰鬥寶可夢持有的招式。在下個對手的回合，受到這個招式的寶可夢無法使用被選擇的招式。': {
     after: async ctx => {
       const d = ctx.opp.active;
@@ -580,6 +851,45 @@ export function estimateAttack(g, p, slot, idx, def) {
 
 // ================= 特性 =================
 const ABILITIES = {
+  // ---- 超電突圍 ----
+  '在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將對手的牌庫上方1張卡丟棄。': {
+    canBench: (g, p) => g.opp(p).deck.length > 0,
+    onBench: (g, p) => { const o = g.opp(p); const c = o.deck.shift(); if (c) { o.discard.push(c); g.log(`丟棄了對手牌庫上方的${card(g, c).name}`); } },
+  },
+  '只要這隻寶可夢在場上，自己的【火】屬性的進化寶可夢使用的招式，對對手的戰鬥寶可夢造成的傷害「+10」點。': {
+    attackBonus: (g, self, attacker) => (g.typesOf(attacker).includes('R') && g.top(attacker).stage > 0 ? 10 : 0),
+  },
+  '這隻寶可夢不會受到對手的寶可夢使用招式的效果的影響。': { noEffects: true },
+  '只要這隻寶可夢在場上，改為【草】與【火】2種屬性。': { types: ['G', 'R'] },
+  '這隻寶可夢不會受到對手的「太晶」寶可夢招式的傷害與效果的影響。': { teraImmune: true },
+  '在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將場上的競技場卡丟棄。': {
+    canBench: g => !!g.stadium,
+    onBench: g => { g.players[g.stadium.owner].discard.push(g.stadium.inst); g.log(`競技場「${card(g, g.stadium.inst).name}」被丟棄了`); g.stadium = null; },
+  },
+  '這隻寶可夢的HP是全滿的狀態下，這隻寶可夢受到招式的傷害而【昏厥】時，這隻寶可夢不會【昏厥】，而是以剩餘HP為「10」的狀態留在場上。': { sturdy: true },
+  '只要這隻寶可夢在場上，每次當對手的戰鬥寶可夢【昏厥】時，自己擲1次硬幣。若為正面，則多獲得1張獎賞卡。無論有多少隻擁有這個特性的寶可夢，這個效果也不會重複。': { miracleKiss: true },
+  '在自己的回合，若從自己的手牌將1張「悠哉尾草棒」丟棄，則可使用1次。選擇1隻對手的備戰寶可夢，與戰鬥寶可夢互換。': {
+    canUse: (g, p) => g.opp(p).bench.length > 0 && p.hand.some(i => card(g, i).name === '悠哉尾草棒'),
+    use: async (g, p) => {
+      const i = p.hand.find(x => card(g, x).name === '悠哉尾草棒');
+      g.removeFromHand(p, i); p.discard.push(i);
+      await g.gust(p);
+    },
+  },
+  '在自己的回合，從手牌將這張卡放置於備戰區時，可使用1次。將自己的戰鬥寶可夢恢復「30」HP，特殊狀態也恢復1個。': {
+    canBench: (g, p) => p.active && (p.active.damage > 0 || Object.keys(p.active.cond).length > 0),
+    onBench: (g, p) => {
+      g.heal(p.active, 30);
+      const k = Object.keys(p.active.cond)[0];
+      if (k) { delete p.active.cond[k]; g.log(`${g.top(p.active).name}的特殊狀態恢復了`); }
+    },
+  },
+  '只要這隻寶可夢在備戰區，雙方的備戰區的【2階進化】寶可夢的特性全部消除。': { benchStage2Lock: true },
+  '只要這隻寶可夢在戰鬥場上，對手的【中毒】的寶可夢，因【中毒】而放置的傷害指示物的數量增加5個。': { poisonBoost: 5 },
+  '若對手的場上沒有「寶可夢【ex】・【V】」，則這隻寶可夢無法使用招式。': {
+    attackCondition: (g, p) => g.slots(g.opp(p)).some(s => { const c = g.top(s); return c.ex || /V$|VMAX$|VSTAR$/.test(c.name); }),
+  },
+  '這隻寶可夢受到招式的傷害時，自己擲1次硬幣。若為正面，則這隻寶可夢不會受到那個傷害。': { evade: true },
   '這隻寶可夢在戰鬥場受到對手的寶可夢招式的傷害時，在使用招式的寶可夢身上放置3個傷害指示物。': {
     onDamagedActive: (g, self, attacker) => { attacker.damage += 30; g.log(`「反擊針」在${g.top(attacker).name}身上放置3個傷害指示物`); },
   },
@@ -731,6 +1041,36 @@ function discardCost(n) {
 const gustItem = { canPlay: (g, p) => g.opp(p).bench.length > 0, play: (g, p) => g.gust(p) };
 
 const TRAINER_BY_TEXT = {
+  // ---- 超電突圍 ----
+  '查看自己的牌庫上方3張卡，以任意順序排列，放回牌庫上方。或者將那些卡全部翻回反面並重洗，放回牌庫下方。': {
+    canPlay: (g, p) => p.deck.length > 0,
+    play: async (g, p) => {
+      const top = p.deck.slice(0, 3);
+      const keep = await g.ask(p, { kind: 'yesno', title: `牌庫上方3張：${top.map(i => card(g, i).name).join('、')}。要保留在牌庫上方嗎？（否＝重洗後放到牌庫下方）`, purpose: 'keepTop3' });
+      if (keep) {
+        // 選擇最上面的一張，其餘依原順序
+        const [first] = await pick(g, p, top, { min: 1, max: 1, title: '選擇要放在最上面的卡', purpose: 'searchAny' });
+        p.deck.splice(0, top.length, first, ...top.filter(i => i !== first));
+      } else {
+        p.deck.splice(0, top.length);
+        p.deck.push(...g.shuffle(top));
+      }
+    },
+  },
+  '這張卡只可在後攻玩家的最初回合使用。 選擇1個對手的場上寶可夢身上附加的能量，放回對手的手牌。': {
+    canPlay: (g, p) => g.turn === 2 && g.slots(g.opp(p)).some(s => s.energy.length),
+    play: async (g, p) => {
+      const o = g.opp(p);
+      const s = await pickSlot(g, p, g.slots(o).filter(x => x.energy.length), { title: '選擇對手的寶可夢', purpose: 'discardOppEnergySlot', target: o.index });
+      const [e] = await pick(g, p, [...s.energy], { min: 1, max: 1, title: '選擇要放回對手手牌的能量', purpose: 'discardOppEnergy' });
+      s.energy = s.energy.filter(x => x !== e);
+      o.hand.push(e);
+    },
+  },
+  '從自己的棄牌區選擇最多2張支援者卡，在給對手看過後加入手牌。': {
+    canPlay: (g, p) => p.discard.some(i => card(g, i).trainer === 'Supporter'),
+    play: async (g, p) => moveDiscardToHand(g, p, await pick(g, p, p.discard.filter(i => card(g, i).trainer === 'Supporter'), { max: 2, title: '選擇最多2張支援者卡', purpose: 'recoverItem' })),
+  },
   '從自己的棄牌區選擇最多2張基本能量卡，在給對手看過後加入手牌。': {
     canPlay: (g, p) => p.discard.some(i => isBasicEnergy(card(g, i))),
     play: async (g, p) => moveDiscardToHand(g, p, await pick(g, p, p.discard.filter(i => isBasicEnergy(card(g, i))), { max: 2, title: '選擇最多2張基本能量', purpose: 'recoverEnergy' })),
@@ -995,6 +1335,17 @@ export function getTrainerImpl(c) {
 
 // ================= 寶可夢道具 =================
 const TOOLS = {
+  '附有這張卡的寶可夢受到對手的寶可夢招式的傷害而【昏厥】時，從自己的牌庫任意選擇最多3張卡加入手牌。並且重洗牌庫。': {
+    onKO: (g, p) => searchDeck(g, p, () => true, { max: 3, title: '希望護身符：從牌庫選擇最多3張卡', purpose: 'searchAny' }),
+  },
+  '附有這張卡的寶可夢受到對手的【惡】寶可夢招式的傷害時，那個傷害「-60」點，將這張卡丟棄。': {
+    reduceDamage: (g, s, attacker) => (g.typesOf(attacker).includes('D') ? 60 : 0),
+    consumeWhen: (g, s, attacker) => g.typesOf(attacker).includes('D'),
+  },
+  '附有這張卡的寶可夢受到對手的【鋼】寶可夢招式的傷害時，那個傷害「-60」點，將這張卡丟棄。': {
+    reduceDamage: (g, s, attacker) => (g.typesOf(attacker).includes('M') ? 60 : 0),
+    consumeWhen: (g, s, attacker) => g.typesOf(attacker).includes('M'),
+  },
   '附有這張卡的【鬥】寶可夢，受到對手的寶可夢招式的傷害「-30」點。': { reduceDamage: (g, s) => (g.top(s).type === 'F' ? 30 : 0) },
   '附有這張卡的寶可夢使用的招式，對對手的戰鬥寶可夢造成的傷害「+10」點。': { damageBonus: () => 10 },
   '當附有這張卡的寶可夢在戰鬥場受到對手的寶可夢招式的傷害時，在使用招式的寶可夢身上放置2個傷害指示物。': {
