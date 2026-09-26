@@ -19,10 +19,11 @@ export function imageUrl(c) {
   const id = IMAGE_IDS[c.id];
   return id ? `https://asia.pokemon-card.com/tw/card-img/tw${String(id).padStart(8, '0')}.png` : null;
 }
+// 優先使用專案內的縮小版卡圖（img/cards），失敗時改讀官方網站，再失敗則使用文字卡面
 export function imgTag(c) {
-  const url = showImages && imageUrl(c);
-  if (!url) return '';
-  return `<img class="card-img" loading="lazy" alt="" src="${url}" onload="this.classList.add('ok')" onerror="this.remove()">`;
+  const remote = showImages && imageUrl(c);
+  if (!remote) return '';
+  return `<img class="card-img" loading="lazy" alt="" src="img/cards/${c.id}.webp" data-alt="${remote}" onload="this.classList.add('ok')" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
 }
 
 const RARITY_MARK = { C: '●', U: '◆', R: '★', RR: '★★', SR: '★★★', ACE: 'ACE' };

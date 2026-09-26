@@ -32,7 +32,7 @@ python3 -m http.server 8000
 - 卡名與效果文字取自 [tcgdex/cards-database](https://github.com/tcgdex/cards-database) 的 `data-asia` 繁體中文資料，涵蓋 ex初階牌組 (SVD)、皮卡丘ex 起始組合 (SVC)，以及朱&紫系列的環境卡。
 - 還沒有繁中資料的超級進化世代卡（超級路卡利歐ex、胡地等），依日文版內容翻譯（`tools/custom-cards.mjs`）。
 - 招式效果由 `js/engine/effects.js` 解析卡片的中文文字；解析不了的效果都另外手寫實作。`npm test` 會檢查所有卡片都有實作。
-- 卡圖直接讀取[台灣官方訓練家網站](https://asia.pokemon-card.com/tw/)的圖片（對照表 `js/data/images.js`，用 `node tools/fetch-images.mjs` 重新產生），載入失敗時自動改用文字卡面（可在「收藏」頁關閉）。
+- 卡圖來自[台灣官方訓練家網站](https://asia.pokemon-card.com/tw/)，縮小後存放在 `img/cards/`（`node tools/fetch-images.mjs` 產生對照表、`python3 tools/download-images.py` 下載），讀不到時改讀官網圖片，載入失敗時自動改用文字卡面（可在「收藏」頁關閉）。
 
 重新產生卡片資料：
 
