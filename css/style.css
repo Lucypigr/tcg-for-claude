@@ -465,3 +465,60 @@ nav::-webkit-scrollbar { display: none; }
   .deck-list { grid-template-columns: 1fr; }
   .modal-body { padding: 14px; }
 }
+
+/* 隨機對手 */
+.mystery { display: flex; gap: 16px; align-items: center; background: var(--panel); border: 2px dashed var(--line); border-radius: var(--radius); padding: 14px 18px; }
+.mystery p { margin: 4px 0 0; color: var(--muted); }
+.mystery-card {
+  width: 64px; height: 88px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900;
+  background: linear-gradient(135deg, #1c3f9a, #0d1f55); border: 3px solid #3d7dca; color: var(--accent); animation: mysteryBob 2.4s ease-in-out infinite;
+}
+@keyframes mysteryBob { 50% { transform: translateY(-4px) rotate(-3deg); } }
+
+/* ===== 對戰特效 ===== */
+.fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 90; overflow: hidden; }
+.fx-layer > div { position: absolute; will-change: transform, opacity; }
+.fx-ring { width: 60px; height: 60px; border-radius: 50%; border: 4px solid #fff; }
+.fx-particle { width: 8px; height: 8px; border-radius: 50%; }
+.fx-charge { border-radius: 12px; border: 3px solid #fff; }
+.fx-atk-name { font-size: 22px; font-weight: 900; white-space: nowrap; letter-spacing: 2px; }
+.fx-orb { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: rgba(0, 0, 0, .55); font-size: 18px; }
+.fx-slash { width: 180px; height: 6px; border-radius: 3px; box-shadow: 0 0 12px #fff; }
+.fx-number { font-size: 38px; font-weight: 900; color: #ff4b2b; -webkit-text-stroke: 2px #fff; text-shadow: 0 4px 0 #6b0f00, 0 0 18px rgba(255, 80, 40, .8); white-space: nowrap; }
+.fx-number.big { font-size: 52px; }
+.fx-number.huge { font-size: 68px; color: #ffcb05; text-shadow: 0 5px 0 #a42a08, 0 0 28px rgba(255, 150, 0, .9); }
+.fx-flash { inset: 0; }
+.fx-ko-text { font-size: 44px; font-weight: 900; color: #fff; background: linear-gradient(135deg, #e3350d, #8a1a05); padding: 4px 22px; border-radius: 12px; border: 3px solid #fff; box-shadow: 0 0 30px rgba(227, 53, 13, .9); white-space: nowrap; }
+.fx-energy { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #222; border: 3px solid #fff; }
+.fx-rays {
+  width: 260px; height: 260px; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 246, 194, .85) 0 8deg, transparent 8deg 24deg);
+  mask: radial-gradient(circle, #000 20%, transparent 70%); -webkit-mask: radial-gradient(circle, #000 20%, transparent 70%);
+}
+.fx-evo-glow { border-radius: 12px; background: rgba(255, 255, 255, .85); box-shadow: 0 0 40px 10px #fff6c2; }
+.fx-banner-small { font-weight: 900; font-size: 20px; color: #fff6c2; text-shadow: 0 0 10px #ffb300, 0 2px 0 #000; white-space: nowrap; }
+.fx-aura { border-radius: 14px; border: 3px solid #d7a8ff; box-shadow: 0 0 30px 8px rgba(196, 107, 255, .8), inset 0 0 20px rgba(196, 107, 255, .6); }
+.fx-card-reveal { left: 50%; top: 50%; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, .7)); }
+.fx-card-reveal .card { --w: min(230px, 55vw); }
+.fx-shine { inset: 0; background: linear-gradient(90deg, transparent 30%, rgba(255, 255, 255, .25) 50%, transparent 70%); }
+.fx-coin { left: 50%; top: 45%; transform: translate(-50%, -50%); perspective: 600px; }
+.coin-inner { width: 110px; height: 110px; position: relative; transform-style: preserve-3d; animation: coinFlip 1s cubic-bezier(.2,.7,.3,1) forwards; }
+.coin-inner.tails { animation-name: coinFlipTails; }
+.coin-face { position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 900; backface-visibility: hidden; border: 6px solid #b8860b; box-shadow: inset 0 0 20px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .5); }
+.coin-face.front { background: radial-gradient(circle at 35% 30%, #fff3a8, #f0b400 60%, #b8860b); color: #7a4a00; }
+.coin-face.back { background: radial-gradient(circle at 35% 30%, #e8eef8, #9aa6cc 60%, #5a6688); color: #2a3350; transform: rotateY(180deg); }
+@keyframes coinFlip { 0% { transform: translateY(80px) rotateY(0) scale(.6); } 60% { transform: translateY(-40px) rotateY(1440deg) scale(1.1); } 100% { transform: translateY(0) rotateY(1440deg) scale(1); } }
+@keyframes coinFlipTails { 0% { transform: translateY(80px) rotateY(0) scale(.6); } 60% { transform: translateY(-40px) rotateY(1620deg) scale(1.1); } 100% { transform: translateY(0) rotateY(1620deg) scale(1); } }
+.fx-turn { left: 50%; top: 45%; width: 120vw; text-align: center; padding: 14px 0; }
+.fx-turn span { display: inline-block; font-size: 34px; font-weight: 900; letter-spacing: 6px; transform: skewX(12deg); }
+.fx-turn.me { background: linear-gradient(90deg, transparent, rgba(240, 180, 0, .95) 20%, rgba(255, 216, 58, .95) 80%, transparent); color: #2a2000; }
+.fx-turn.opp { background: linear-gradient(90deg, transparent, rgba(160, 31, 31, .95) 20%, rgba(227, 53, 13, .95) 80%, transparent); color: #fff; }
+.fx-prize { left: 50%; font-size: 22px; font-weight: 900; padding: 8px 20px; border-radius: 20px; white-space: nowrap; }
+.fx-prize.me { bottom: 22%; background: linear-gradient(90deg, #1c3f9a, #3d7dca); color: #fff; box-shadow: 0 0 24px #3d7dca; }
+.fx-prize.opp { top: 22%; background: linear-gradient(90deg, #6b1111, #c62a12); color: #fff; box-shadow: 0 0 24px #c62a12; }
+@media (max-width: 640px) {
+  .fx-atk-name { font-size: 16px; }
+  .fx-turn span { font-size: 24px; }
+  .fx-number { font-size: 30px; } .fx-number.big { font-size: 40px; } .fx-number.huge { font-size: 52px; }
+  .fx-ko-text { font-size: 30px; }
+}

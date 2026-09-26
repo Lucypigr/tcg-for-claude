@@ -69,7 +69,7 @@ function home() {
     showModal(`<h2>歡迎來到寶可夢卡牌 AI 對戰！</h2>
       <ul class="intro-list">
         <li>你擁有兩套起始牌組：<b>皮卡丘ex 初階牌組</b>與<b>噴火龍ex 初階牌組</b>，兩套牌的卡片也已加入你的收藏。</li>
-        <li>AI 會從 <b>5 套環境主流牌組</b>中隨機挑選一套與你對戰。</li>
+        <li>AI 會從 <b>${AI_DECKS.length} 套牌組</b>（包含環境主流牌組）中隨機挑選一套與你對戰。</li>
         <li>獲勝可得金幣：簡單 ${store.REWARDS.easy.win}、普通 ${store.REWARDS.normal.win}、困難 ${store.REWARDS.hard.win}（落敗也有少量金幣）。</li>
         <li>到<b>商店</b>用金幣購買卡包，卡包會隨機掉落卡片。</li>
         <li>在<b>牌組編輯</b>中用收藏的卡片自由組牌（基本能量無限供應）。</li>
@@ -96,8 +96,8 @@ function setup() {
           <div class="deck-cover">${d.cover ? cardHTML(d.cover, { small: true }) : ''}</div>
           <div><b>${esc(d.name)}</b>${d.preset ? '<span class="tag">起始牌組</span>' : ''}<p>${ok ? `${Object.values(d.cards).reduce((a, b) => a + b, 0)}張` : '牌組不完整或卡片不足'}</p></div></div>`;
       }).join('')}</div>
-      <h3>3. AI 對手（從以下5套中隨機）</h3>
-      <div class="ai-row">${AI_DECKS.map(d => `<div class="ai-deck"><div class="ai-cover">${cardHTML(d.cover, { small: true })}</div><b>${esc(d.name)}</b><small>${esc(d.trainer)}</small></div>`).join('')}</div>
+      <h3>3. AI 對手</h3>
+      <div class="mystery"><div class="mystery-card">？</div><div><b>隨機對手</b><p>AI 會從 ${AI_DECKS.length} 套牌組中隨機挑選一套，對戰開始時才揭曉！</p></div></div>
       <div class="start-row"><button class="btn big primary" id="start">⚔ 開始對戰</button></div>`, 'setup');
     app.querySelectorAll('[data-level]').forEach(el => el.onclick = () => { level = el.dataset.level; render(); });
     app.querySelectorAll('[data-deck]').forEach(el => el.onclick = () => { deckId = el.dataset.deck; render(); });

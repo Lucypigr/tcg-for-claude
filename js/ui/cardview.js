@@ -20,10 +20,15 @@ export function imageUrl(c) {
   return id ? `https://asia.pokemon-card.com/tw/card-img/tw${String(id).padStart(8, '0')}.png` : null;
 }
 // 優先使用專案內的縮小版卡圖（img/cards），失敗時改讀官方網站，再失敗則使用文字卡面
+// 已載入過的圖片直接顯示，避免重新繪製畫面時閃爍
+const loaded = new Set();
+window.__cardImgLoaded = (img) => { loaded.add(img.getAttribute('src')); img.classList.add('ok'); };
 export function imgTag(c) {
   const remote = showImages && imageUrl(c);
   if (!remote) return '';
-  return `<img class="card-img" loading="lazy" alt="" src="img/cards/${c.id}.webp" data-alt="${remote}" onload="this.classList.add('ok')" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
+  const local = `img/cards/${c.id}.webp`;
+  const src = loaded.has(remote) && !loaded.has(local) ? remote : local;
+  return `<img class="card-img${loaded.has(src) ? ' ok' : ''}" alt="" src="${src}" data-alt="${src === local ? remote : ''}" onload="__cardImgLoaded(this)" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
 }
 
 const RARITY_MARK = { C: '●', U: '◆', R: '★', RR: '★★', SR: '★★★', ACE: 'ACE' };

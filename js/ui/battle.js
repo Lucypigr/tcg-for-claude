@@ -5,6 +5,7 @@ import { cardData, TYPE_NAMES, isPokemon } from '../engine/cards.js';
 import { deckToList } from '../data/decks.js';
 import { cardHTML, miniCardHTML, slotHTML, energyIcon, esc } from './cardview.js';
 import { showModal, toast } from './modal.js';
+import { FX } from './fx.js';
 
 const LEVEL_NAME = { easy: '簡單', normal: '普通', hard: '困難' };
 
@@ -40,7 +41,13 @@ export class BattleView {
     const l0 = deckToList(playerDeck.cards);
     const l1 = deckToList(aiDeck.cards);
     this.ai = new AIController(level, l1);
-    this.ai.delay = 650;
+    this.ai.delay = 700;
+    // AI 等待特效播放完畢再行動
+    this.fxBusy = 0;
+    this.ai.wait = async () => {
+      const t = Math.max(this.ai.delay, this.fxBusy - performance.now() + 250);
+      await new Promise(r => setTimeout(r, t));
+    };
     this.game = new Game({
       decks: [l0, l1],
       names: [playerName, aiDeck.trainer],
@@ -107,12 +114,7 @@ export class BattleView {
       }
       return;
     }
-    if (e.type === 'coin') toast(e.heads ? '🪙 正面' : '🪙 反面', e.heads ? 'good' : 'bad');
-    if (e.type === 'damage') this.fx.push({ slot: e.slot, text: `-${e.amount}`, cls: 'fx-dmg' });
-    if (e.type === 'ko') this.fx.push({ slot: e.slot, text: '昏厥！', cls: 'fx-ko' });
-    if (e.type === 'attack') this.fx.push({ slot: e.slot, text: e.name, cls: 'fx-atk' });
-    if (e.type === 'turn') toast(e.player === 0 ? '你的回合' : `${this.game.players[1].name}的回合`, e.player === 0 ? 'turn-me' : 'turn-opp');
-    if (e.type === 'trainer' && e.player === 1) toast(`對手使用了 ${cardData(e.cid).name}`, 'info');
+    if (['coin', 'damage', 'ko', 'attack', 'turn', 'trainer', 'energy', 'evolve', 'ability', 'prize'].includes(e.type)) this.fx.push(e);
     if (e.type === 'gameover') { this.render(true); this.gameOver(e.winner, e.reason); return; }
     this.render();
   }
@@ -127,6 +129,7 @@ export class BattleView {
   actionsFor(pred) { return this.human.pending ? this.human.pending.actions.filter(pred) : []; }
 
   doRender() {
+    this.snapshotRects();
     const g = this.game;
     const me = g.players[0], opp = g.players[1];
     const targetIds = this.mode?.kind === 'target' ? new Set(this.mode.actions.map(a => a.target)) : new Set();
@@ -179,16 +182,38 @@ export class BattleView {
     }
 
     // 特效
-    const fx = this.fx.splice(0);
-    for (const f of fx) {
-      const el = this.root.querySelector(`[data-slot="${f.slot}"]`);
-      if (!el) continue;
-      const d = document.createElement('div');
-      d.className = `fx ${f.cls}`;
-      d.textContent = f.text;
-      el.appendChild(d);
-      if (f.cls === 'fx-dmg') el.classList.add('shake');
+    this.playFx();
+  }
+
+  snapshotRects() {
+    this.prevRects = new Map();
+    for (const el of this.root.querySelectorAll('.slot[data-slot]')) this.prevRects.set(+el.dataset.slot, el.getBoundingClientRect());
+  }
+  rectOf(id) {
+    const el = this.root.querySelector(`.slot[data-slot="${id}"]`);
+    return el ? el.getBoundingClientRect() : this.prevRects?.get(id);
+  }
+  playFx() {
+    const list = this.fx.splice(0);
+    if (!list.length) return;
+    if (!this.fxr) this.fxr = new FX();
+    const f = this.fxr;
+    let hit = 0, dmgN = 0, t = 0;
+    for (const e of list) {
+      switch (e.type) {
+        case 'turn': f.turn(e.player === 0, e.player === 0 ? '你的回合' : `${this.game.players[1].name}的回合`); t = Math.max(t, 1300); break;
+        case 'attack': hit = f.attack(this.rectOf(e.slot), this.rectOf(e.target), e.ptype, e.name) || 0; t = Math.max(t, hit + 900); break;
+        case 'damage': f.damage(this.rectOf(e.slot), e.amount, hit + dmgN++ * 120); t = Math.max(t, hit + 1200); break;
+        case 'ko': f.ko(this.rectOf(e.slot), hit + 250); t = Math.max(t, hit + 1650); break;
+        case 'coin': f.coin(e.heads); t = Math.max(t, 1300); break;
+        case 'trainer': f.cardReveal(e.cid, e.player === 1); t = Math.max(t, 1150); break;
+        case 'energy': f.energy(this.rectOf(e.slot), e.etype); t = Math.max(t, 700); break;
+        case 'evolve': f.evolve(this.rectOf(e.slot), e.cid); t = Math.max(t, 1000); break;
+        case 'ability': f.ability(this.rectOf(e.slot)); t = Math.max(t, 900); break;
+        case 'prize': f.prize(e.player === 0, e.n); t = Math.max(t, 1500); break;
+      }
     }
+    this.fxBusy = Math.max(this.fxBusy, performance.now() + t);
   }
 
   // ================= 點擊處理 =================
@@ -423,6 +448,7 @@ export class BattleView {
 
   gameOver(winner, reason) {
     const won = winner === 0;
+    setTimeout(() => this.fxr?.destroy(), 3000);
     this.onEnd?.(won, reason);
   }
 }

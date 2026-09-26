@@ -102,7 +102,114 @@ export const AI_DECKS = [
       'SVD-LIG': 16,
     },
   },
+  // ---- 以下牌組以「ex初階牌組」(SVD) 的卡片為主，能量張數自動補滿60張 ----
+  {
+    id: 'ai-charizard',
+    name: '噴火龍ex・大比鳥ex',
+    trainer: '火焰訓練家 阿楓',
+    desc: '經典組合：噴火龍ex的「煉獄支配」一口氣加速，大比鳥ex「音速搜索」每回合找到需要的卡。',
+    cover: 'SV3-066',
+    type: 'R',
+    cards: fill({
+      'SV3-012': 4, 'SV3-013': 2, 'SV3-066': 3, 'SV3-087': 2, 'SV3-088': 1, 'SV3-089': 2, 'SV6a-038': 1,
+      'SVD-120': 4, 'SVD-118': 4, 'SVD-119': 3, 'SV6a-056': 2, 'SVD-122': 2, 'SV4M-059': 1, 'SV5M-062': 1,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2,
+    }, { R: 1 }),
+  },
+  {
+    id: 'ai-greninja',
+    name: '甲賀忍蛙ex',
+    trainer: '忍者 阿杏',
+    desc: '「隱密手裏劍」先在對手身上留下傷害，再用「激流斬」打出240點。',
+    cover: 'SVD-029',
+    type: 'W',
+    cards: fill({
+      'SVD-027': 4, 'SVD-028': 3, 'SVD-029': 3, 'SVD-022': 2, 'SVD-026': 2,
+      'SVD-120': 2, 'SVD-118': 4, 'SVD-117': 4, 'SVD-122': 2, 'SVD-123': 2, 'SVD-110': 2, 'SVD-125': 2,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2, 'SVD-133': 2,
+    }, { W: 1 }),
+  },
+  {
+    id: 'ai-dragonite',
+    name: '快龍ex',
+    trainer: '屠龍家 小椿',
+    desc: '330HP的巨龍，「流星破壞」擲出正面時造成280點傷害。',
+    cover: 'SVD-090',
+    type: 'N',
+    cards: fill({
+      'SVD-088': 4, 'SVD-089': 3, 'SVD-090': 3, 'SVD-098': 2, 'SVD-097': 1,
+      'SVD-120': 3, 'SVD-118': 4, 'SVD-117': 4, 'SVD-122': 2, 'SVD-110': 2, 'SVD-125': 2,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2, 'SVD-133': 2,
+    }, { W: 1, L: 1 }),
+  },
+  {
+    id: 'ai-houndoom',
+    name: '黑魯加ex',
+    trainer: '惡黨 阿修',
+    desc: '「邪惡爪」封住對手基礎寶可夢的招式，「追獵獠牙」220點強攻。',
+    cover: 'SVD-072',
+    type: 'D',
+    cards: fill({
+      'SVD-071': 4, 'SVD-072': 3, 'SVD-074': 2, 'SVD-075': 2, 'SVD-079': 2, 'SV6a-038': 1,
+      'SVD-118': 4, 'SVD-117': 4, 'SVD-122': 2, 'SVD-123': 2, 'SVD-110': 2, 'SVD-126': 2, 'SVD-131': 1,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2, 'SVD-133': 2,
+    }, { D: 1 }),
+  },
+  {
+    id: 'ai-melmetal',
+    name: '美錄梅塔ex',
+    trainer: '鋼鐵工匠 阿鐵',
+    desc: '「金屬吸收」自己加速能量，鋼能量越多「全金屬關節」越痛。',
+    cover: 'SVD-085',
+    type: 'M',
+    cards: fill({
+      'SVD-084': 4, 'SVD-085': 3, 'SVD-081': 3, 'SVD-083': 2, 'SVD-098': 1,
+      'SVD-118': 4, 'SVD-117': 4, 'SVD-122': 3, 'SVD-112': 2, 'SVD-110': 2, 'SVD-126': 2, 'SV2D-067': 1,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2, 'SVD-128': 1,
+    }, { M: 1 }),
+  },
+  {
+    id: 'ai-decidueye',
+    name: '狙射樹梟ex',
+    trainer: '森林獵人 阿翠',
+    desc: '「狩獵箭」同時打擊戰鬥場與備戰區，「無拘無束」自由進出戰場。',
+    cover: 'SVD-008',
+    type: 'G',
+    cards: fill({
+      'SVD-006': 4, 'SVD-007': 3, 'SVD-008': 3, 'SVD-003': 2, 'SVD-001': 2, 'SVD-080': 1,
+      'SVD-120': 3, 'SVD-118': 4, 'SVD-117': 4, 'SVD-122': 2, 'SVD-110': 2, 'SVD-126': 1,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2, 'SVD-133': 2,
+    }, { G: 1 }),
+  },
+  {
+    id: 'ai-clefable',
+    name: '皮可西ex',
+    trainer: '月光少女 小月',
+    desc: '「月表領域」讓超寶可夢撤退無需能量，「月亮奇跡」170點並自由調整能量。',
+    cover: 'SVD-048',
+    type: 'P',
+    cards: fill({
+      'SVD-047': 4, 'SVD-048': 3, 'SVD-051': 3, 'SVD-052': 2, 'SVD-053': 2,
+      'SVD-118': 4, 'SVD-117': 4, 'SVD-122': 2, 'SVD-110': 2, 'SVD-111': 2, 'SVD-125': 2,
+      'SVD-135': 4, 'SVD-130': 2, 'SVD-138': 2, 'SVD-129': 2, 'SVD-133': 2,
+    }, { P: 1 }),
+  },
 ];
+
+// 將牌組以基本能量補滿至60張（依比例分配屬性）
+function fill(cards, ratio) {
+  const ENERGY = { G: 'SVD-GRA', R: 'SVD-FIR', W: 'SVD-WAT', L: 'SVD-LIG', P: 'SVD-PSY', F: 'SVD-FIG', D: 'SVD-DAR', M: 'SVD-MET' };
+  const out = { ...cards };
+  let left = 60 - Object.values(cards).reduce((a, b) => a + b, 0);
+  const types = Object.keys(ratio);
+  const total = types.reduce((a, t) => a + ratio[t], 0);
+  types.forEach((t, i) => {
+    const n = i === types.length - 1 ? left : Math.round((60 - Object.values(cards).reduce((a, b) => a + b, 0)) * ratio[t] / total);
+    out[ENERGY[t]] = (out[ENERGY[t]] || 0) + n;
+    left -= n;
+  });
+  return out;
+}
 
 export function deckToList(cards) {
   const out = [];

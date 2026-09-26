@@ -321,7 +321,7 @@ export class Game {
   async takePrizes(p, n) {
     n = Math.min(n, p.prizes.length);
     for (let i = 0; i < n; i++) p.hand.push(p.prizes.shift());
-    if (n > 0) this.log(`${p.name}獲得了${n}張獎賞卡（剩餘${p.prizes.length}張）`, 'prize');
+    if (n > 0) { this.log(`${p.name}獲得了${n}張獎賞卡（剩餘${p.prizes.length}張）`, 'prize'); this.emit('prize', { player: p.index, n }); }
     if (p.prizes.length === 0) this.finish(p.index, '獲得所有獎賞卡');
   }
   checkWin() {
@@ -523,6 +523,7 @@ export class Game {
         s.energy.push(inst);
         p.energyAttached = true;
         this.log(`${p.name}將${this.card(inst).name}附於${this.top(s).name}身上`);
+        this.emit('energy', { slot: s.id, etype: this.card(inst).provides || 'C', player: p.index });
         const impl = getEnergyImpl(this.card(inst));
         if (impl?.onAttach) await impl.onAttach(this, p, s);
         return false;
@@ -604,7 +605,7 @@ export class Game {
     this.clearConditions(slot);
     slot.effects = slot.effects.filter(e => e.persist);
     this.log(`${p.name}的${prev.name}進化成${c.name}`, 'evolve');
-    this.emit('evolve', { slot: slot.id });
+    this.emit('evolve', { slot: slot.id, cid: c.id, player: p.index });
     const ab = getAbilityImpl(c);
     if (fromHand && ab?.onEvolve) {
       const yes = await this.ask(p, { kind: 'yesno', title: `要使用「${c.abilities[0].name}」嗎？`, purpose: 'onEvolve', card: c.id });
@@ -621,7 +622,7 @@ export class Game {
     const atk = c.attacks[idx];
     const o = this.opp(p);
     this.log(`${p.name}的${c.name}使用了「${atk.name}」`, 'attack');
-    this.emit('attack', { slot: a.id, name: atk.name });
+    this.emit('attack', { slot: a.id, name: atk.name, ptype: c.type, target: o.active?.id, player: p.index });
     if (a.cond.confused) {
       if (!this.coin(p, '混亂')) {
         this.log(`${c.name}因混亂而攻擊失敗，自己受到30點傷害`);
