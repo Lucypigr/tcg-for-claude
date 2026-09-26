@@ -1,6 +1,7 @@
 // 存檔：金幣、收藏、自訂牌組、戰績（localStorage）
 import { STARTER_DECKS } from './data/decks.js';
 import { CARD_MAP, isBasicEnergy } from './engine/cards.js';
+import { ALIASES } from './data/cards.js';
 
 const KEY = 'ptcg-ai-battle-save-v1';
 
@@ -25,6 +26,7 @@ function fresh() {
     decks: [],
     stats: { easy: [0, 0], normal: [0, 0], hard: [0, 0] },
     packsOpened: 0,
+    granted: STARTER_DECKS.map(d => d.id + '@2'),
     lastDeck: STARTER_DECKS[0].id,
     lastLevel: 'normal',
     seenIntro: false,
@@ -36,12 +38,34 @@ export function load() {
   if (state) return state;
   try {
     const raw = localStorage.getItem(KEY);
-    state = raw ? { ...fresh(), ...JSON.parse(raw) } : fresh();
+    state = raw ? { ...fresh(), granted: [], ...JSON.parse(raw) } : fresh();
   } catch {
     state = fresh();
   }
+  migrate(state);
   return state;
 }
+// 舊存檔轉換：合併的卡片ID改成保留的ID；新版起始牌組的卡片補發一次
+function migrate(s) {
+  const remap = obj => {
+    for (const [from, to] of Object.entries(ALIASES)) {
+      if (obj[from]) { obj[to] = (obj[to] || 0) + obj[from]; delete obj[from]; }
+    }
+  };
+  remap(s.collection);
+  for (const d of s.decks) remap(d.cards);
+  s.granted ||= [];
+  for (const d of STARTER_DECKS) {
+    const key = d.id + '@2';
+    if (s.granted.includes(key)) continue;
+    for (const [cid, n] of Object.entries(d.cards)) {
+      if (isBasicEnergy(CARD_MAP.get(cid))) continue;
+      s.collection[cid] = Math.max(s.collection[cid] || 0, n);
+    }
+    s.granted.push(key);
+  }
+}
+
 export function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* 無法存檔時忽略 */ }
 }

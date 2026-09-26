@@ -1,0 +1,510 @@
+[
+ {
+  "id": "SVQP-001",
+  "set": "SVQP",
+  "name": "皮卡丘ex",
+  "officialId": 13137,
+  "cat": "P",
+  "stage": 0,
+  "hp": 190,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "皮卡拳",
+    "cost": [
+     "C"
+    ],
+    "dmg": "30",
+    "text": ""
+   },
+   {
+    "name": "極限伏特",
+    "cost": [
+     "L",
+     "L",
+     "C"
+    ],
+    "dmg": "220",
+    "text": "擲1次硬幣若為反面，則將這隻寶可夢身上附加的能量全部丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 0,
+  "ex": true
+ },
+ {
+  "id": "SVQP-002",
+  "set": "SVQP",
+  "name": "小磁怪",
+  "officialId": 13138,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "衝撞",
+    "cost": [
+     "L"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "高速球",
+    "cost": [
+     "C",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SVQP-003",
+  "set": "SVQP",
+  "name": "三合一磁怪",
+  "officialId": 13139,
+  "cat": "P",
+  "stage": 1,
+  "hp": 90,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "撞擊",
+    "cost": [
+     "L"
+    ],
+    "dmg": "30",
+    "text": ""
+   },
+   {
+    "name": "電球",
+    "cost": [
+     "L",
+     "C",
+     "C"
+    ],
+    "dmg": "60",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "小磁怪"
+ },
+ {
+  "id": "SVQP-004",
+  "set": "SVQP",
+  "name": "自爆磁怪",
+  "officialId": 13140,
+  "cat": "P",
+  "stage": 2,
+  "hp": 170,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "磁力抵制",
+    "cost": [
+     "L"
+    ],
+    "dmg": "50",
+    "text": "若希望，將對手的戰鬥寶可夢與備戰寶可夢互換。[由對手選擇放置於戰鬥場的寶可夢。]"
+   },
+   {
+    "name": "打雷",
+    "cost": [
+     "L",
+     "C",
+     "C"
+    ],
+    "dmg": "180",
+    "text": "這隻寶可夢也受到30點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "三合一磁怪"
+ },
+ {
+  "id": "SVQP-005",
+  "set": "SVQP",
+  "name": "閃電鳥",
+  "officialId": 13141,
+  "cat": "P",
+  "stage": 0,
+  "hp": 110,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "追擊伏特",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "20+",
+    "text": "增加對手的戰鬥寶可夢身上放置的傷害指示物的數量×10點傷害。"
+   },
+   {
+    "name": "啄鑽",
+    "cost": [
+     "L",
+     "C",
+     "C"
+    ],
+    "dmg": "80",
+    "text": ""
+   }
+  ],
+  "weak": "L",
+  "resist": "F",
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SVQP-006",
+  "set": "SVQP",
+  "name": "帕奇利茲",
+  "officialId": 13142,
+  "cat": "P",
+  "stage": 0,
+  "hp": 70,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "啪滋啪滋充電",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "擲3次硬幣，從自己的棄牌區選擇最多與正面出現的次數相同數量的「基本【雷】能量」卡，以任意方式附於備戰寶可夢身上。"
+   },
+   {
+    "name": "小伏特",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "30",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SVQP-007",
+  "set": "SVQP",
+  "name": "傘電蜥",
+  "officialId": 13143,
+  "cat": "P",
+  "stage": 0,
+  "hp": 60,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "呼喚",
+    "cost": [
+     "C"
+    ],
+    "dmg": "",
+    "text": "從自己的牌庫抽出1張卡。"
+   },
+   {
+    "name": "劈哩啪啦",
+    "cost": [
+     "L"
+    ],
+    "dmg": "10",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SVQP-008",
+  "set": "SVQP",
+  "name": "光電傘蜥",
+  "officialId": 13144,
+  "cat": "P",
+  "stage": 1,
+  "hp": 100,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "瘋狂伏特",
+    "cost": [
+     "L"
+    ],
+    "dmg": "70",
+    "text": "這隻寶可夢也受到20點傷害。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false,
+  "from": "傘電蜥"
+ },
+ {
+  "id": "SVQP-009",
+  "set": "SVQP",
+  "name": "捷拉奧拉",
+  "officialId": 13145,
+  "cat": "P",
+  "stage": 0,
+  "hp": 120,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "麻麻關節",
+    "cost": [
+     "C"
+    ],
+    "dmg": "20",
+    "text": "擲1次硬幣若為正面，則可將對手的戰鬥寶可夢【麻痺】。"
+   },
+   {
+    "name": "強力伏特",
+    "cost": [
+     "L",
+     "L",
+     "C"
+    ],
+    "dmg": "120",
+    "text": "選擇1個這隻寶可夢身上附加的能量，將其丟棄。"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SVQP-010",
+  "set": "SVQP",
+  "name": "光蚪仔",
+  "officialId": 13146,
+  "cat": "P",
+  "stage": 0,
+  "hp": 50,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "撞擊",
+    "cost": [
+     "C"
+    ],
+    "dmg": "10",
+    "text": ""
+   },
+   {
+    "name": "電球",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "20",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 1,
+  "ex": false
+ },
+ {
+  "id": "SVQP-011",
+  "set": "SVQP",
+  "name": "電肚蛙",
+  "officialId": 13147,
+  "cat": "P",
+  "stage": 1,
+  "hp": 130,
+  "type": "L",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "電氣子彈",
+    "cost": [
+     "L",
+     "C"
+    ],
+    "dmg": "70",
+    "text": "對手的1隻備戰寶可夢也受到30點傷害。[在備戰區不計算弱點・抵抗力。]"
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 2,
+  "ex": false,
+  "from": "光蚪仔"
+ },
+ {
+  "id": "SVQP-012",
+  "set": "SVQP",
+  "name": "卡比獸",
+  "officialId": 13148,
+  "cat": "P",
+  "stage": 0,
+  "hp": 150,
+  "type": "C",
+  "abilities": [],
+  "attacks": [
+   {
+    "name": "扣殺抽出",
+    "cost": [
+     "C"
+    ],
+    "dmg": "20",
+    "text": "從自己的牌庫抽出1張卡。"
+   },
+   {
+    "name": "百萬噸重拳",
+    "cost": [
+     "C",
+     "C",
+     "C"
+    ],
+    "dmg": "100",
+    "text": ""
+   }
+  ],
+  "weak": "F",
+  "resist": null,
+  "retreat": 3,
+  "ex": false
+ },
+ {
+  "id": "SVQP-013",
+  "set": "SVQP",
+  "name": "能量貼紙",
+  "officialId": 13149,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "擲1次硬幣若為正面，則從自己的棄牌區選擇1張基本能量卡，附於備戰寶可夢身上。"
+ },
+ {
+  "id": "SVQP-014",
+  "set": "SVQP",
+  "name": "超級球",
+  "officialId": 13150,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "查看自己的牌庫上方7張卡。從其中選擇1張寶可夢卡，在給對手看過後加入手牌。將剩餘卡放回牌庫並重洗。"
+ },
+ {
+  "id": "SVQP-015",
+  "set": "SVQP",
+  "name": "高級球",
+  "officialId": 13151,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "這張卡必須將自己的2張手牌丟棄才可使用。 從自己的牌庫選擇1張寶可夢卡，在給對手看過後加入手牌。並且重洗牌庫。"
+ },
+ {
+  "id": "SVQP-016",
+  "set": "SVQP",
+  "name": "寶可夢交替",
+  "officialId": 13152,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "將自己的戰鬥寶可夢與備戰寶可夢互換。"
+ },
+ {
+  "id": "SVQP-017",
+  "set": "SVQP",
+  "name": "寶可夢捕捉器",
+  "officialId": 13153,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "擲1次硬幣若為正面，則選擇1隻對手的備戰寶可夢，與戰鬥寶可夢互換。"
+ },
+ {
+  "id": "SVQP-018",
+  "set": "SVQP",
+  "name": "洛拍棒",
+  "officialId": 13154,
+  "cat": "T",
+  "trainer": "Item",
+  "text": "查看自己的牌庫上方4張卡，從其中選擇任意數量的支援者卡，在給對手看過後加入手牌。將剩餘卡放回牌庫並重洗。"
+ },
+ {
+  "id": "SVQP-019",
+  "set": "SVQP",
+  "name": "艾莉絲的鬥志",
+  "officialId": 13155,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "這張卡必須將自己的1張手牌丟棄才可使用。 從牌庫抽卡直到自己的手牌滿6張為止。"
+ },
+ {
+  "id": "SVQP-020",
+  "set": "SVQP",
+  "name": "滑稽演員",
+  "officialId": 13156,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "雙方玩家各將手牌全部放回牌庫並重洗。然後，自己擲1次硬幣，若為正面，則從牌庫抽卡，自己抽出5張，對手抽出3張。若為反面，則從牌庫抽卡，自己抽出3張，對手抽出5張。"
+ },
+ {
+  "id": "SVQP-021",
+  "set": "SVQP",
+  "name": "希特隆的機智",
+  "officialId": 13157,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "將自己的所有【雷】寶可夢各恢復「60」HP。"
+ },
+ {
+  "id": "SVQP-022",
+  "set": "SVQP",
+  "name": "短褲小子",
+  "officialId": 13158,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "將自己的手牌全部放回牌庫並重洗。然後，從牌庫抽出5張卡。"
+ },
+ {
+  "id": "SVQP-023",
+  "set": "SVQP",
+  "name": "黑連",
+  "officialId": 13159,
+  "cat": "T",
+  "trainer": "Supporter",
+  "text": "從自己的牌庫抽出3張卡。"
+ },
+ {
+  "id": "SVQP-LIG",
+  "set": "SVQP",
+  "name": "基本【雷】能量",
+  "officialId": 13184,
+  "cat": "E",
+  "energy": "basic"
+ }
+]

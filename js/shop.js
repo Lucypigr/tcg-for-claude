@@ -3,7 +3,7 @@ import { CARDS } from './data/cards.js';
 import { isBasicEnergy } from './engine/cards.js';
 import { spend, addCards } from './store.js';
 
-const STARTER_SETS = new Set(['SVD', 'SVC']);
+const STARTER_SETS = new Set(['SVD', 'SVC', 'SVQP']);
 const STAPLES = ['SVD-117', 'SVD-118', 'SVD-119', 'SVD-120', 'SVD-122', 'SVD-129', 'SVD-130', 'SVD-135', 'SVD-138'];
 
 const notEnergy = c => !isBasicEnergy(c);
@@ -15,7 +15,7 @@ export const PACKS = [
   {
     id: 'basic',
     name: '朱&紫 基本擴充包',
-    desc: '收錄「ex初階牌組」與「皮卡丘ex起始組合」的卡片，適合補強基礎牌組。',
+    desc: '收錄「ex初階牌組」「ex初階牌組 皮卡丘 (SVQP)」與「皮卡丘ex起始組合」的卡片，適合補強基礎牌組。',
     price: 150,
     size: 5,
     color: '#e8413c',

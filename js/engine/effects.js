@@ -95,6 +95,10 @@ const PATTERNS = [
     before: ctx => { if (ctx.defender) ctx.base += ctx.g.countEnergy(ctx.defender) * +m[1]; },
     est: (b, e) => b + (e.def ? e.g.countEnergy(e.def) * +m[1] : 0),
   })],
+  [/^增加對手的戰鬥寶可夢身上放置的傷害指示物的數量×(\d+)點傷害$/, m => ({
+    before: ctx => { if (ctx.defender) ctx.base += ctx.defender.damage / 10 * +m[1]; },
+    est: (b, e) => b + (e.def ? e.def.damage / 10 * +m[1] : 0),
+  })],
   [/^增加這隻寶可夢身上放置的傷害指示物的數量×(\d+)點傷害$/, m => ({
     before: ctx => { ctx.base += ctx.attacker.damage / 10 * +m[1]; },
     est: (b, e) => b + e.slot.damage / 10 * +m[1],
@@ -157,7 +161,7 @@ const PATTERNS = [
   [/^擲1次硬幣若為反面，則這隻寶可夢也受到(\d+)點傷害$/, m => ({
     after: ctx => { if (!ctx.g.coin(ctx.me)) { ctx.attacker.damage += +m[1]; ctx.g.log(`${ctx.card.name}也受到${m[1]}點傷害`, 'dmg'); } },
   })],
-  [/^(擲1次硬幣若為正面，則)?將對手的戰鬥寶可夢【(..)】(?:與【(..)】)?$/, m => ({
+  [/^(擲1次硬幣若為正面，則(?:可)?)?將對手的戰鬥寶可夢【(..)】(?:與【(..)】)?$/, m => ({
     after: ctx => {
       if (!ctx.defender || ctx.opp.active !== ctx.defender) return;
       if (m[1] && !ctx.g.coin(ctx.me)) return;
@@ -456,6 +460,17 @@ const MANUAL_ATTACKS = {
       ctx.me.discard = ctx.me.discard.filter(i => !ch.includes(i));
       s.energy.push(...ch);
       ctx.g.log(`${ctx.g.top(s).name}附上了${ch.length}張基本雷能量`);
+    },
+  },
+  '擲3次硬幣，從自己的棄牌區選擇最多與正面出現的次數相同數量的「基本【雷】能量」卡，以任意方式附於備戰寶可夢身上。': {
+    after: async ctx => {
+      let h = 0;
+      for (let i = 0; i < 3; i++) if (ctx.g.coin(ctx.me)) h++;
+      if (!h || !ctx.me.bench.length) return;
+      const cands = ctx.me.discard.filter(i => { const c = card(ctx.g, i); return isBasicEnergy(c) && c.provides === 'L'; });
+      const ch = await pick(ctx.g, ctx.me, cands, { max: h, title: `從棄牌區選擇最多${h}張基本雷能量`, purpose: 'discardEnergyToAttach' });
+      ctx.me.discard = ctx.me.discard.filter(i => !ch.includes(i));
+      await attachEach(ctx.g, ctx.me, ch, benchOf(ctx.me), '選擇要附上能量的備戰寶可夢');
     },
   },
   '選擇1個對手的戰鬥寶可夢身上附加的能量，將其丟棄。': {
@@ -847,6 +862,38 @@ const TRAINER_BY_TEXT = {
     },
   },
   '選擇1隻對手的備戰寶可夢，與戰鬥寶可夢互換。': gustItem,
+  '擲1次硬幣若為正面，則從自己的棄牌區選擇1張基本能量卡，附於備戰寶可夢身上。': {
+    canPlay: (g, p) => p.bench.length > 0 && p.discard.some(i => isBasicEnergy(card(g, i))),
+    play: async (g, p) => {
+      if (!g.coin(p)) return;
+      const [e] = await pick(g, p, p.discard.filter(i => isBasicEnergy(card(g, i))), { min: 1, max: 1, title: '選擇1張基本能量', purpose: 'discardEnergyToAttach' });
+      if (!e) return;
+      p.discard.splice(p.discard.indexOf(e), 1);
+      await attachEach(g, p, [e], benchOf(p), '選擇要附上能量的備戰寶可夢');
+    },
+  },
+  '查看自己的牌庫上方4張卡，從其中選擇任意數量的支援者卡，在給對手看過後加入手牌。將剩餘卡放回牌庫並重洗。': {
+    canPlay: (g, p) => p.deck.length > 0,
+    play: async (g, p) => {
+      const top = p.deck.slice(0, 4);
+      const ch = await pick(g, p, top.filter(i => card(g, i).trainer === 'Supporter'), { max: 4, title: '選擇任意數量的支援者卡', purpose: 'searchSupporter', extra: { looked: top } });
+      fromDeck(g, p, ch); p.hand.push(...ch); g.shuffle(p.deck);
+      if (ch.length) g.log(`${p.name}將${ch.map(i => card(g, i).name).join('、')}加入手牌`);
+    },
+  },
+  '這張卡必須將自己的1張手牌丟棄才可使用。 從牌庫抽卡直到自己的手牌滿6張為止。': {
+    ...discardCost(1),
+    canPlay: (g, p) => p.hand.length >= 2 && p.deck.length > 0,
+    play: async function (g, p) { await this.pay(g, p); drawN(g, p, Math.max(0, 6 - p.hand.length)); },
+  },
+  '雙方玩家各將手牌全部放回牌庫並重洗。然後，自己擲1次硬幣，若為正面，則從牌庫抽卡，自己抽出5張，對手抽出3張。若為反面，則從牌庫抽卡，自己抽出3張，對手抽出5張。': {
+    play: (g, p) => {
+      for (const pl of g.players) { pl.deck.push(...pl.hand); pl.hand = []; g.shuffle(pl.deck); }
+      const heads = g.coin(p);
+      drawN(g, p, heads ? 5 : 3);
+      drawN(g, g.opp(p), heads ? 3 : 5);
+    },
+  },
   '這張卡必須將自己的2張手牌丟棄才可使用。從自己的牌庫選擇1張寶可夢卡，在給對手看過後加入手牌。並且重洗牌庫。': null,
   '選擇1隻對手的備戰寶可夢，與戰鬥寶可夢互換。然後，將自己的戰鬥寶可夢與備戰寶可夢互換。': {
     canPlay: (g, p) => g.opp(p).bench.length > 0 || p.bench.length > 0,

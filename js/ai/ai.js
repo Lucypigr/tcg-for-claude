@@ -371,15 +371,19 @@ export class AIController {
       case '夜間擔架': return 55;
       case '秘密箱': return handSize >= 5 ? 50 : 0;
       case '推理組合': return 0;
+      case '洛拍棒': return p.supporterPlayed ? 0 : 58;
+      case '能量貼紙': return p.bench.some(b => this.missingEnergy(g, b).length) ? 45 : 0;
     }
     if (c.trainer === 'Supporter') {
       if (this.level === 'normal' && Math.random() < 0.1) return 0;
-      const draws = { 博士的研究: 7, 丹瑜: 5, 妮莫: 3, 裁判: 4, 短褲小子: 5, 凰檗: 3 }[name];
+      const draws = { 博士的研究: 7, 丹瑜: 5, 妮莫: 3, 裁判: 4, 短褲小子: 5, 凰檗: 3, 黑連: 3, 艾莉絲的鬥志: 4, 滑稽演員: 5 }[name];
       if (draws && !this.drawSafe(p, draws - (['裁判', '短褲小子'].includes(name) ? handSize : 0))) return 0;
       switch (name) {
         case '博士的研究': return handSize <= 4 ? 70 : handSize <= 6 ? 50 : 20;
         case '丹瑜': return handSize <= 3 ? 68 : 0;
-        case '妮莫': return 62;
+        case '妮莫': case '黑連': return 62;
+        case '艾莉絲的鬥志': return handSize <= 4 ? 64 : 0;
+        case '滑稽演員': return handSize <= 3 ? 55 : 0;
         case '裁判': return handSize <= 3 ? 69 : (o.hand.length >= 6 && handSize <= 5 ? 60 : 0);
         case '短褲小子': return handSize <= 3 ? 64 : 0;
         case '奇樹': return p.prizes.length >= 5 && handSize <= 3 ? 55 : (o.prizes.length <= 2 && this.hard ? 67 : 0);

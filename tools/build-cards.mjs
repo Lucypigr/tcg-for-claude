@@ -147,18 +147,38 @@ for (const f of SOURCES) {
 }
 for (const c of CUSTOM_CARDS) cards.push(c);
 
+// 從台灣官方訓練家網站抓取的擴充包（tools/scrape-official.mjs 產生的 tools/official/*.json）
+const officialDir = path.join(here, 'official');
+const officialIds = {};
+if (fs.existsSync(officialDir)) {
+  for (const f of fs.readdirSync(officialDir).filter(f => f.endsWith('.json')).sort()) {
+    for (const raw of JSON.parse(fs.readFileSync(path.join(officialDir, f), 'utf8'))) {
+      if (raw.cat === 'E' && raw.energy === 'basic') continue; // 基本能量沿用 SVD 版本
+      const { officialId, ...c } = raw;
+      c.rarity = c.rarity || defaultRarity(c);
+      officialIds[c.id] = officialId;
+      cards.push(c);
+    }
+  }
+}
+
 // 同名且文字完全相同的卡只保留一張 (例如多個版本的巢穴球)
-const sig = c => JSON.stringify({ ...c, id: 0, set: 0, rarity: 0 });
+const norm = t => (t || '').replace(/[\s。，、]/g, '');
+const sig = c => JSON.stringify([c.name, c.cat, c.stage, c.hp, c.type, c.from, c.weak, c.resist, c.retreat, c.trainer, c.energy, c.provides, norm(c.text),
+  (c.abilities || []).map(a => [a.name, norm(a.text)]), (c.attacks || []).map(a => [a.name, a.cost.join(''), String(a.dmg), norm(a.text)])]);
 const bySig = new Map();
 const final = [];
+const aliases = {}; // 被合併的重複卡 → 保留的卡片ID
 for (const c of cards) {
   const s = sig(c);
-  if (bySig.has(s)) continue;
+  if (bySig.has(s)) { aliases[c.id] = bySig.get(s); continue; }
   bySig.set(s, c.id);
   final.push(c);
 }
 
 const outFile = path.resolve(here, '../js/data/cards.js');
 fs.writeFileSync(outFile,
-  `// 由 tools/build-cards.mjs 產生，請勿手動修改\n// 資料來源: tcgdex/cards-database (data-asia, 繁體中文)\nexport const CARDS = ${JSON.stringify(final, null, 0).replace(/},{/g, '},\n{')};\n`);
+  `// 由 tools/build-cards.mjs 產生，請勿手動修改\n// 資料來源: tcgdex/cards-database (data-asia, 繁體中文)\nexport const CARDS = ${JSON.stringify(final, null, 0).replace(/},{/g, '},\n{')};\n` +
+  `// 與其他版本完全相同而合併的卡片ID\nexport const ALIASES = ${JSON.stringify(aliases)};\n`);
+fs.writeFileSync(path.join(here, 'official-ids.json'), JSON.stringify(officialIds));
 console.log(`寫入 ${final.length} 張卡 → ${outFile}`);

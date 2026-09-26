@@ -1,19 +1,28 @@
-// 牌組清單：玩家起始牌組2套 + AI環境牌組5套
+// 牌組清單：玩家起始牌組2套 + AI牌組
 // 格式：{ 卡片ID: 張數 }
+import { ALIASES } from './cards.js';
+
+// 與其他版本完全相同而合併的卡片，換成保留的ID
+function resolve(cards) {
+  const out = {};
+  for (const [id, n] of Object.entries(cards)) { const k = ALIASES[id] || id; out[k] = (out[k] || 0) + n; }
+  return out;
+}
 
 export const STARTER_DECKS = [
   {
     id: 'starter-pikachu',
     name: '皮卡丘ex 初階牌組',
-    desc: '以「ex初階牌組 皮卡丘」(SVQP) 為藍本。皮卡丘ex的「極限伏特」一擊造成220點傷害，三合一磁怪與電氣發生器負責加速能量。',
+    desc: '依照「ex初階牌組 皮卡丘」(SVQP) 官方收錄的23種卡片組成。皮卡丘ex的「極限伏特」一擊220點，帕奇利茲「啪滋啪滋充電」從棄牌區回收雷能量。（官方未公布各卡張數，張數為自行配置）',
     cover: 'SVC-001',
     type: 'L',
-    cards: {
-      'SVC-001': 2, 'SV1V-029': 2, 'SV8-034': 3, 'SV8-035': 2, 'SVC-003': 2, 'SVC-004': 2, 'SVD-034': 2, 'SVD-035': 1, 'SVD-101': 1,
-      'SVD-118': 4, 'SVD-117': 3, 'SVD-122': 2, 'SVD-123': 2, 'SVD-113': 3, 'SVD-110': 2, 'SVD-121': 1,
-      'SVD-135': 3, 'SVD-133': 2, 'SVD-130': 2, 'SVD-138': 1, 'SVD-125': 2,
-      'SVD-LIG': 16,
-    },
+    cards: resolve({
+      'SVQP-001': 2, 'SVQP-002': 3, 'SVQP-003': 2, 'SVQP-004': 2, 'SVQP-005': 1, 'SVQP-006': 2, 'SVQP-007': 2, 'SVQP-008': 2,
+      'SVQP-009': 1, 'SVQP-010': 2, 'SVQP-011': 2, 'SVQP-012': 1,
+      'SVQP-013': 2, 'SVQP-014': 3, 'SVQP-015': 1, 'SVQP-016': 2, 'SVQP-017': 2, 'SVQP-018': 2,
+      'SVQP-019': 2, 'SVQP-020': 1, 'SVQP-021': 1, 'SVQP-022': 2, 'SVQP-023': 3,
+      'SVD-LIG': 17,
+    }),
   },
   {
     id: 'starter-charizard',

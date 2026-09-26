@@ -235,7 +235,6 @@ export const CARDS = [{"id":"SVD-001","set":"SVD","name":"榛果球","cat":"P","
 {"name":"電氣子彈","cost":["L","L"],"dmg":"50","text":"對手的1隻備戰寶可夢也受到30點傷害。[在備戰區不計算弱點・抵抗力。]"}],"rarity":"U"},
 {"id":"SVC-009","set":"SVC","name":"巴布土撥","cat":"P","stage":2,"hp":140,"type":"L","from":"布土撥","weak":"F","resist":null,"retreat":1,"ex":false,"abilities":[],"attacks":[{"name":"音速伏特","cost":["L"],"dmg":"40","text":""},
 {"name":"電氣拳","cost":["L","L"],"dmg":"100","text":"對手的1隻備戰寶可夢也受到60點傷害。[在備戰區不計算弱點・抵抗力。]"}],"rarity":"R"},
-{"id":"SVC-014","set":"SVC","name":"高級球","cat":"T","trainer":"Item","text":"這張卡必須將自己的2張手牌丟棄才可使用。從自己的牌庫選擇1張寶可夢卡，在給對手看過後加入手牌。並且重洗牌庫。","rarity":"C"},
 {"id":"SVC-020","set":"SVC","name":"妮莫","cat":"T","trainer":"Supporter","text":"從自己的牌庫抽出3張卡。","rarity":"U"},
 {"id":"SV1V-029","set":"SV1V","name":"帕奇利茲","cat":"P","stage":0,"hp":70,"type":"L","weak":"F","resist":null,"retreat":1,"ex":false,"abilities":[{"name":"電氣袋","text":"這隻寶可夢不會【麻痺】。"}],"attacks":[{"name":"一同放電","cost":["L","C"],"dmg":"10+","text":"增加自己的備戰區的【雷】寶可夢的數量×20點傷害。這個招式的傷害不計算弱點。"}],"rarity":"U"},
 {"id":"SV8-034","set":"SV8","name":"小磁怪","cat":"P","stage":0,"hp":60,"type":"L","weak":"F","resist":null,"retreat":1,"ex":false,"abilities":[],"attacks":[{"name":"光彈","cost":["L"],"dmg":"20","text":""}],"rarity":"C"},
@@ -293,4 +292,24 @@ export const CARDS = [{"id":"SVD-001","set":"SVD","name":"榛果球","cat":"P","
 {"id":"M1S-036","set":"M1S","name":"凱西","cat":"P","stage":0,"hp":50,"type":"P","weak":"D","resist":"F","retreat":1,"ex":false,"abilities":[],"attacks":[{"name":"瞬間移動攻擊","cost":["P"],"dmg":"10","text":"將這隻寶可夢與備戰寶可夢互換。"}],"rarity":"C"},
 {"id":"M1S-037","set":"M1S","name":"勇基拉","cat":"P","stage":1,"from":"凱西","hp":80,"type":"P","weak":"D","resist":"F","retreat":1,"ex":false,"abilities":[{"name":"精神抽牌","text":"在自己的回合，從手牌使出這張卡並完成進化時，可使用1次。從自己的牌庫抽出2張卡。"}],"attacks":[{"name":"超能力","cost":["P"],"dmg":"30","text":""}],"rarity":"U"},
 {"id":"M1S-038","set":"M1S","name":"胡地","cat":"P","stage":2,"from":"勇基拉","hp":140,"type":"P","weak":"D","resist":"F","retreat":1,"ex":false,"abilities":[{"name":"精神抽牌","text":"在自己的回合，從手牌使出這張卡並完成進化時，可使用1次。從自己的牌庫抽出3張卡。"}],"attacks":[{"name":"手中之力","cost":["P"],"dmg":"","text":"在對手的戰鬥寶可夢身上放置自己手牌張數×2個傷害指示物。"}],"rarity":"R"},
-{"id":"SV5K-057","set":"SV5K","name":"土龍節節","cat":"P","stage":1,"from":"土龍弟弟","hp":140,"type":"C","weak":"F","resist":null,"retreat":3,"ex":false,"abilities":[{"name":"逃跑抽牌","text":"在自己的回合時可使用1次。從自己的牌庫抽出3張卡。然後，將這隻寶可夢與附加的卡，全部放回自己的牌庫並重洗。"}],"attacks":[{"name":"大地粉碎","cost":["C","C","C"],"dmg":"90","text":""}],"rarity":"R"}];
+{"id":"SV5K-057","set":"SV5K","name":"土龍節節","cat":"P","stage":1,"from":"土龍弟弟","hp":140,"type":"C","weak":"F","resist":null,"retreat":3,"ex":false,"abilities":[{"name":"逃跑抽牌","text":"在自己的回合時可使用1次。從自己的牌庫抽出3張卡。然後，將這隻寶可夢與附加的卡，全部放回自己的牌庫並重洗。"}],"attacks":[{"name":"大地粉碎","cost":["C","C","C"],"dmg":"90","text":""}],"rarity":"R"},
+{"id":"SVQP-005","set":"SVQP","name":"閃電鳥","cat":"P","stage":0,"hp":110,"type":"L","abilities":[],"attacks":[{"name":"追擊伏特","cost":["L","C"],"dmg":"20+","text":"增加對手的戰鬥寶可夢身上放置的傷害指示物的數量×10點傷害。"},
+{"name":"啄鑽","cost":["L","C","C"],"dmg":"80","text":""}],"weak":"L","resist":"F","retreat":1,"ex":false,"rarity":"C"},
+{"id":"SVQP-006","set":"SVQP","name":"帕奇利茲","cat":"P","stage":0,"hp":70,"type":"L","abilities":[],"attacks":[{"name":"啪滋啪滋充電","cost":["C"],"dmg":"","text":"擲3次硬幣，從自己的棄牌區選擇最多與正面出現的次數相同數量的「基本【雷】能量」卡，以任意方式附於備戰寶可夢身上。"},
+{"name":"小伏特","cost":["L","C"],"dmg":"30","text":""}],"weak":"F","resist":null,"retreat":1,"ex":false,"rarity":"C"},
+{"id":"SVQP-007","set":"SVQP","name":"傘電蜥","cat":"P","stage":0,"hp":60,"type":"L","abilities":[],"attacks":[{"name":"呼喚","cost":["C"],"dmg":"","text":"從自己的牌庫抽出1張卡。"},
+{"name":"劈哩啪啦","cost":["L"],"dmg":"10","text":""}],"weak":"F","resist":null,"retreat":1,"ex":false,"rarity":"C"},
+{"id":"SVQP-008","set":"SVQP","name":"光電傘蜥","cat":"P","stage":1,"hp":100,"type":"L","abilities":[],"attacks":[{"name":"瘋狂伏特","cost":["L"],"dmg":"70","text":"這隻寶可夢也受到20點傷害。"}],"weak":"F","resist":null,"retreat":1,"ex":false,"from":"傘電蜥","rarity":"U"},
+{"id":"SVQP-009","set":"SVQP","name":"捷拉奧拉","cat":"P","stage":0,"hp":120,"type":"L","abilities":[],"attacks":[{"name":"麻麻關節","cost":["C"],"dmg":"20","text":"擲1次硬幣若為正面，則可將對手的戰鬥寶可夢【麻痺】。"},
+{"name":"強力伏特","cost":["L","L","C"],"dmg":"120","text":"選擇1個這隻寶可夢身上附加的能量，將其丟棄。"}],"weak":"F","resist":null,"retreat":1,"ex":false,"rarity":"C"},
+{"id":"SVQP-010","set":"SVQP","name":"光蚪仔","cat":"P","stage":0,"hp":50,"type":"L","abilities":[],"attacks":[{"name":"撞擊","cost":["C"],"dmg":"10","text":""},
+{"name":"電球","cost":["L","C"],"dmg":"20","text":""}],"weak":"F","resist":null,"retreat":1,"ex":false,"rarity":"C"},
+{"id":"SVQP-012","set":"SVQP","name":"卡比獸","cat":"P","stage":0,"hp":150,"type":"C","abilities":[],"attacks":[{"name":"扣殺抽出","cost":["C"],"dmg":"20","text":"從自己的牌庫抽出1張卡。"},
+{"name":"百萬噸重拳","cost":["C","C","C"],"dmg":"100","text":""}],"weak":"F","resist":null,"retreat":3,"ex":false,"rarity":"C"},
+{"id":"SVQP-013","set":"SVQP","name":"能量貼紙","cat":"T","trainer":"Item","text":"擲1次硬幣若為正面，則從自己的棄牌區選擇1張基本能量卡，附於備戰寶可夢身上。","rarity":"C"},
+{"id":"SVQP-018","set":"SVQP","name":"洛拍棒","cat":"T","trainer":"Item","text":"查看自己的牌庫上方4張卡，從其中選擇任意數量的支援者卡，在給對手看過後加入手牌。將剩餘卡放回牌庫並重洗。","rarity":"C"},
+{"id":"SVQP-019","set":"SVQP","name":"艾莉絲的鬥志","cat":"T","trainer":"Supporter","text":"這張卡必須將自己的1張手牌丟棄才可使用。 從牌庫抽卡直到自己的手牌滿6張為止。","rarity":"U"},
+{"id":"SVQP-020","set":"SVQP","name":"滑稽演員","cat":"T","trainer":"Supporter","text":"雙方玩家各將手牌全部放回牌庫並重洗。然後，自己擲1次硬幣，若為正面，則從牌庫抽卡，自己抽出5張，對手抽出3張。若為反面，則從牌庫抽卡，自己抽出3張，對手抽出5張。","rarity":"U"},
+{"id":"SVQP-023","set":"SVQP","name":"黑連","cat":"T","trainer":"Supporter","text":"從自己的牌庫抽出3張卡。","rarity":"U"}];
+// 與其他版本完全相同而合併的卡片ID
+export const ALIASES = {"SVC-010":"SVD-101","SVC-011":"SVD-111","SVC-012":"SVD-113","SVC-013":"SVD-118","SVC-014":"SVD-119","SVC-015":"SVD-121","SVC-016":"SVD-122","SVC-017":"SVD-123","SVC-018":"SVD-130","SVC-019":"SVD-132","SVC-021":"SVD-136","SV1S-076":"SVD-135","SVQP-001":"SVC-001","SVQP-002":"SVD-036","SVQP-003":"SVD-037","SVQP-004":"SVD-038","SVQP-011":"SVD-042","SVQP-014":"SVD-117","SVQP-015":"SVD-119","SVQP-016":"SVD-122","SVQP-017":"SVD-123","SVQP-021":"SV8-103","SVQP-022":"SVD-132"};
