@@ -152,11 +152,15 @@ const officialDir = path.join(here, 'official');
 const officialIds = {};
 // 尚未支援的卡：招式學習器（賦予招式的道具）
 const EXCLUDE = ['SV8-101'];
+// 官網沒有標示 ACE SPEC，依卡名判定
+const ACE_NAMES = ['希望護身符', '極限腰帶', '中立中心', '豪華斗篷', '古舊能量', '寶可夢旋風回收機', '璀璨結晶', '釣竿MAX', '奇跡耳麥', '頂尖捕捉器', '秘密箱', '大師球'];
+// 需要本遊戲尚未支援的機制（從牌庫替換、使用進化前招式、猜HP、備戰區8隻、賦予招式的道具）
+const EXCLUDE_NAMES = ['海豚俠', '海豚俠ex', '古空棘魚', '泰姆', '零之大空洞', '招式學習器 演進', '招式學習器 衰退'];
 if (fs.existsSync(officialDir)) {
   for (const f of fs.readdirSync(officialDir).filter(f => f.endsWith('.json')).sort()) {
     for (const raw of JSON.parse(fs.readFileSync(path.join(officialDir, f), 'utf8'))) {
       if (raw.cat === 'E' && raw.energy === 'basic') continue; // 基本能量沿用 SVD 版本
-      if (EXCLUDE.includes(raw.id)) continue;
+      if (EXCLUDE.includes(raw.id) || EXCLUDE_NAMES.includes(raw.name)) continue;
       const { officialId, ...c } = raw;
       if (seen.has(c.id)) { officialIds[c.id] = officialId; continue; } // 已由 tcgdex 資料收錄
       seen.add(c.id);
@@ -173,8 +177,9 @@ if (fs.existsSync(officialDir)) {
       // 稀有度：優先使用 tcgdex 的資料
       const num = c.id.split('-')[1];
       const tfile = path.join(root, 'SV', c.set, `${num}.ts`);
-      if (fs.existsSync(tfile)) { try { const t = load(`SV/${c.set}/${num}.ts`); if (RARITY[t.rarity]) c.rarity = RARITY[t.rarity]; } catch { /* ignore */ } }
+      if (fs.existsSync(tfile)) { try { const t = load(`SV/${c.set}/${num}.ts`); if (RARITY[t.rarity] && t.rarity !== 'None') c.rarity = RARITY[t.rarity]; } catch { /* ignore */ } }
       if (!c.rarity && +num > 0 && c.set === 'SV8' && +num > 106) c.rarity = c.cat === 'P' && c.ex ? 'SR' : 'R';
+      if (ACE_NAMES.includes(c.name) || c.rarity === 'ACE') { c.ace = true; c.rarity = 'ACE'; }
       c.rarity = c.rarity || defaultRarity(c);
       officialIds[c.id] = officialId;
       cards.push(c);

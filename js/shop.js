@@ -10,8 +10,9 @@ const notEnergy = c => !isBasicEnergy(c);
 const basicPool = CARDS.filter(c => STARTER_SETS.has(c.set) && notEnergy(c));
 // 超電突圍中原本就收錄於環境包的卡
 const SV8_META = ['SV8-034', 'SV8-035', 'SV8-036', 'SV8-095', 'SV8-102', 'SV8-103', 'SV8-104', 'SV8-105', 'SV8-106'];
-const metaPool = CARDS.filter(c => ((!STARTER_SETS.has(c.set) && c.set !== 'SV8') || STAPLES.includes(c.id) || SV8_META.includes(c.id)) && notEnergy(c));
+const metaPool = CARDS.filter(c => ((!STARTER_SETS.has(c.set) && c.set !== 'SV8' && c.set !== 'SV8a') || STAPLES.includes(c.id) || SV8_META.includes(c.id)) && notEnergy(c));
 const sv8Pool = CARDS.filter(c => c.set === 'SV8' && notEnergy(c));
+const sv8aPool = CARDS.filter(c => c.set === 'SV8a' && notEnergy(c));
 const exPool = CARDS.filter(c => notEnergy(c) && (c.rarity !== 'C'));
 
 export const PACKS = [
@@ -44,6 +45,16 @@ export const PACKS = [
     color: '#f2b705',
     pool: sv8Pool,
     slots: [{ C: 1 }, { C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { R: 0.6, RR: 0.33, ACE: 0.07 }],
+  },
+  {
+    id: 'sv8a',
+    name: '太晶慶典 強化擴充包',
+    desc: '台灣官方強化擴充包「太晶慶典」(SV8a)：伊布家族ex、太樂巴戈斯ex、月月熊 赫月ex、各種古代／未來寶可夢與ACE SPEC。',
+    price: 350,
+    size: 5,
+    color: '#39c5d8',
+    pool: sv8aPool,
+    slots: [{ C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { U: 0.6, R: 0.4 }, { RR: 0.8, ACE: 0.2 }],
   },
   {
     id: 'ex',

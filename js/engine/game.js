@@ -1,6 +1,6 @@
 // 寶可夢集換式卡牌遊戲 對戰規則引擎
 // 所有玩家選擇皆透過 controller（真人UI或AI）以 async 方式取得
-import { cardData, isBasicPokemon, isBasicEnergy, isEnergy, isPokemon, prizeValue, TYPE_NAMES, isFuture } from './cards.js';
+import { cardData, isBasicPokemon, isBasicEnergy, isEnergy, isPokemon, prizeValue, TYPE_NAMES, isFuture, isAncient, hasRule } from './cards.js';
 import { getAttackImpl, getAbilityImpl, getTrainerImpl, getEnergyImpl, getStadiumImpl, getToolImpl } from './effects.js';
 
 let UID = 1;
@@ -119,28 +119,61 @@ export class Game {
   maxHp(slot) {
     const c = this.top(slot);
     let hp = c.hp;
-    if (slot.tool) { const t = getToolImpl(this.card(slot.tool)); if (t.hpBonus) hp += t.hpBonus(this, slot, c); }
+    if (slot.tool) { const t = this.toolOf(slot); if (t.hpBonus) hp += t.hpBonus(this, slot, c); }
     if (this.stadium) { const s = getStadiumImpl(this.card(this.stadium.inst)); if (s.hpBonus) hp += s.hpBonus(this, slot, c); }
+    const ab = this.abilityOf(slot);
+    if (ab?.hpBonus) hp += ab.hpBonus(this, slot);
     return hp;
   }
   hpLeft(slot) { return this.maxHp(slot) - slot.damage; }
+  // 寶可夢道具（「阻礙之塔」會消除道具效果）
+  toolOf(slot) {
+    if (!slot?.tool) return {};
+    if (this.stadium && getStadiumImpl(this.card(this.stadium.inst)).noTools) return {};
+    return getToolImpl(this.card(slot.tool));
+  }
   // 特性（考慮「黏著束縛」：備戰區的2階進化寶可夢特性消除）
   abilityOf(slot) {
     const c = this.top(slot);
     const ab = getAbilityImpl(c);
     if (!ab) return null;
     if (c.stage === 2 && !this.isActive(slot) && this.players.some(p => p.bench.some(b => b !== slot && getAbilityImpl(this.top(b))?.benchStage2Lock))) return null;
+    const owner = this.ownerOf(slot);
+    if (owner) {
+      const oa = this.opp(owner).active;
+      // 「暗夜羽擊」：對手的戰鬥寶可夢特性消除
+      if (oa && owner.active === slot && getAbilityImpl(this.top(oa))?.nullifyOppActive && !ab.nullifyOppActive) return null;
+      // 「初始化」：擁有規則的寶可夢（未來除外）特性消除
+      if (hasRule(c) && !isFuture(c) && this.players.some(p => p.active && getAbilityImpl(this.top(p.active))?.nullifyRuleBox)) return null;
+    }
     return ab;
   }
   typesOf(slot) {
     const ab = this.abilityOf(slot);
-    return ab?.types || [this.top(slot).type];
+    const t = ab?.types && (!ab.typesIf || ab.typesIf(this, slot)) ? ab.types : null;
+    return t || [this.top(slot).type];
   }
+  hasToolNamed(slot, name) { return !!slot.tool && this.card(slot.tool).name === name && !!this.toolOf(slot); }
   // 「純樸」：不受對手招式的效果影響
   effectBlocked(slot) {
-    return !!(this.inAttack && this.ownerOf(slot) !== this.me && this.abilityOf(slot)?.noEffects);
+    if (!this.inAttack) return false;
+    const owner = this.ownerOf(slot);
+    if (!owner || owner === this.me) return false;
+    if (this.abilityOf(slot)?.noEffects) return true;
+    if (slot.energy.some(e => getEnergyImpl(this.card(e))?.noEffects)) return true;
+    if (owner.active !== slot && this.benchShielded(slot)) return true;
+    // 「恆星之幕」：備戰寶可夢不會因對手基礎寶可夢招式的效果被放置傷害指示物
+    if (owner.active !== slot && this.placingCounters && this.currentAttacker && this.top(this.currentAttacker).stage === 0 && this.slots(owner).some(s => this.abilityOf(s)?.benchCounterShield)) return true;
+    return false;
   }
-  hasEffect(slot, kind, pred = () => true) { return slot.effects.some(e => e.kind === kind && e.turn === this.turn && pred(e)); }
+  // 備戰區不受對手招式的傷害與效果影響（「球形盾牌」「藏隱」）
+  benchShielded(slot) {
+    const owner = this.ownerOf(slot);
+    if (owner.active === slot) return false;
+    if (this.abilityOf(slot)?.benchSelfShield) return true;
+    return this.slots(owner).some(s => this.abilityOf(s)?.benchShield);
+  }
+  hasEffect(slot, kind, pred = () => true) { return slot.effects.some(e => e.kind === kind && (e.turn === this.turn || e.turn === Infinity) && pred(e)); }
   playerEffect(p, kind) { return p.effects.filter(e => e.kind === kind && e.turn === this.turn); }
   addEffect(slot, eff) {
     if (this.effectBlocked(slot)) { this.log(`${this.top(slot).name}不受招式的效果影響！`); return; }
@@ -161,12 +194,24 @@ export class Game {
     return this.energyUnits(slot).filter(u => !type || u === type || u === '*').length;
   }
   attackCost(slot, atk) {
-    const cost = [...atk.cost];
+    const c = this.top(slot);
+    const impl = getAttackImpl(c, c.attacks.indexOf(atk));
+    let cost = impl?.costOverride?.(this, slot) || [...atk.cost];
+    const ab = this.abilityOf(slot);
+    if (ab?.costReduce) { let n = ab.costReduce(this, slot, atk); while (n-- > 0) { const i = cost.lastIndexOf('C'); if (i < 0) break; cost.splice(i, 1); } }
+    for (const e of slot.effects) if (e.kind === 'extraCost' && e.turn === this.turn) for (let i = 0; i < e.n; i++) cost.push('C');
     if (this.stadium) {
       const s = getStadiumImpl(this.card(this.stadium.inst));
       if (s.extraCost) cost.push(...s.extraCost(this, slot));
     }
     return cost;
+  }
+  // 「璀璨結晶」：所需能量減少1個（任何屬性）
+  canPayFor(slot, cost) {
+    const units = this.energyUnits(slot);
+    if (this.canPay(cost, units)) return true;
+    if (this.top(slot).tera && this.toolOf(slot).reduceAnyCost) return cost.some((_, i) => this.canPay(cost.filter((__, j) => j !== i), units));
+    return false;
   }
   canPay(cost, units) {
     const pool = [...units];
@@ -184,6 +229,8 @@ export class Game {
       const ab = this.abilityOf(s);
       if (ab?.retreatCost) cost = ab.retreatCost(this, s, slot, cost);
     }
+    const t = this.toolOf(slot);
+    if (t.retreatCost) cost = t.retreatCost(this, slot, cost);
     return Math.max(0, cost);
   }
 
@@ -198,9 +245,11 @@ export class Game {
     let dmg = base;
     if (dmg <= 0) return 0;
     if (toActive) {
-      if (attacker.tool && !opts.noModifiers) { const t = getToolImpl(this.card(attacker.tool)); if (t.damageBonus) dmg += t.damageBonus(this, attacker, target); }
+      if (attacker.tool && !opts.noModifiers) { const t = this.toolOf(attacker); if (t.damageBonus) dmg += t.damageBonus(this, attacker, target); }
       for (const s of this.slots(attackerOwner)) { const ab = this.abilityOf(s); if (ab?.attackBonus) dmg += ab.attackBonus(this, s, attacker, target); }
       for (const e of attacker.effects) if (e.kind === 'attackMinus' && e.turn === this.turn) dmg -= e.amount;
+      for (const e of attacker.effects) if (e.kind === 'attackPlus' && e.turn === this.turn) dmg += e.amount;
+      for (const e of this.playerEffect(attackerOwner, 'exVBonus')) if (defCard.ex || /V$|VMAX$|VSTAR$/.test(defCard.name)) dmg += e.amount;
       const atkTypes = this.typesOf(attacker);
       const weak = this.hasEffect(target, 'weakC') ? 'C' : defCard.weak;
       if (!opts.noWeakness && weak && atkTypes.includes(weak)) dmg *= 2;
@@ -212,7 +261,9 @@ export class Game {
         }
         const ab = this.abilityOf(target);
         if (ab?.reduceDamage) dmg -= ab.reduceDamage(this, target, attacker);
-        if (target.tool) { const t = getToolImpl(this.card(target.tool)); if (t.reduceDamage) dmg -= t.reduceDamage(this, target, attacker); }
+        const team = this.slots(defOwner).map(s => this.abilityOf(s)?.teamReduce).find(Boolean);
+        if (team) dmg -= team(this, target, defOwner);
+        if (target.tool) { const t = this.toolOf(target); if (t.reduceDamage) dmg -= t.reduceDamage(this, target, attacker); }
       }
     } else if (defCard.tera) {
       return 0;
@@ -225,6 +276,13 @@ export class Game {
     if (this.abilityOf(target)?.teraImmune && atkCard.tera) return true;
     const defOwner = this.ownerOf(target);
     if (atkCard.ex && isFuture(this.top(target)) && this.playerEffect(defOwner, 'futureExShield').some(e => defOwner.active?.id === e.source)) return true;
+    const dab = this.abilityOf(target);
+    const exV = atkCard.ex || /V$|VMAX$|VSTAR$/.test(atkCard.name);
+    if (dab?.exVImmune && exV) return true;
+    if (dab?.abilityAttackerImmune && atkCard.abilities.length) return true;
+    if (this.hasEffect(target, 'preventFromBasicNonC') && atkCard.stage === 0 && atkCard.type !== 'C') return true;
+    if (this.benchShielded(target)) return true;
+    if (this.stadium && getStadiumImpl(this.card(this.stadium.inst)).exVShield && exV && !hasRule(this.top(target))) return true;
     return false;
   }
   // 由招式造成傷害（含效果）；回傳實際傷害
@@ -237,10 +295,10 @@ export class Game {
     if (this.isProtected(target, attacker, opts)) { this.log(`${this.top(target).name}不受招式的傷害影響！`); return 0; }
     let dmg = this.attackDamage(attacker, target, base, opts);
     const dab = this.abilityOf(target);
-    if (dmg > 0 && dab?.evade && this.coin(this.ownerOf(target), this.top(target).abilities[0]?.name)) { this.log(`${this.top(target).name}躲開了攻擊！`); return 0; }
+    if (dmg > 0 && dab?.evade && (typeof dab.evade !== 'function' || dab.evade(this, target)) && this.coin(this.ownerOf(target), this.top(target).abilities[0]?.name)) { this.log(`${this.top(target).name}躲開了攻擊！`); return 0; }
     if (dmg > 0 && dab?.sturdy && target.damage === 0 && dmg >= this.maxHp(target)) { dmg = this.maxHp(target) - 10; this.log(`${this.top(target).name}以「${this.top(target).abilities[0].name}」撐住了！`); }
     if (dmg > 0 && target.tool) {
-      const t = getToolImpl(this.card(target.tool));
+      const t = this.toolOf(target);
       if (t.consumeWhen?.(this, target, attacker)) { this.ownerOf(target).discard.push(target.tool); this.log(`${this.card(target.tool).name}發揮效果後被丟棄`); target.tool = null; }
     }
     if (dmg > 0) {
@@ -252,13 +310,17 @@ export class Game {
       if (defOwner.active === target) {
         const ab = this.abilityOf(target);
         if (ab?.onDamagedActive) ab.onDamagedActive(this, target, attacker);
-        if (target.tool) { const t = getToolImpl(this.card(target.tool)); if (t.onDamagedActive) t.onDamagedActive(this, target, attacker); }
+        if (target.tool) { const t = this.toolOf(target); if (t.onDamagedActive) t.onDamagedActive(this, target, attacker); }
       }
     }
     return dmg;
   }
   placeCounters(target, n) {
     if (n <= 0) return;
+    this.placingCounters = true;
+    const blocked = this.effectBlocked(target);
+    this.placingCounters = false;
+    if (blocked) { this.log(`${this.top(target).name}不受招式的效果影響！`); return; }
     if (this.hasEffect(target, 'preventAll') || this.effectBlocked(target)) { this.log(`${this.top(target).name}不受招式的效果影響！`); return; }
     target.damage += n * 10;
     this.log(`在${this.top(target).name}身上放置${n}個傷害指示物`, 'dmg');
@@ -275,6 +337,7 @@ export class Game {
     const ab = this.abilityOf(slot);
     if (this.effectBlocked(slot)) { this.log(`${c.name}不受招式的效果影響！`); return; }
     if (ab?.immune?.includes(cond)) { this.log(`${c.name}不會${COND_NAMES[cond]}`); return; }
+    if (this.conditionImmune(slot)) { this.log(`${c.name}不會陷入特殊狀態`); return; }
     if (slot.energy.some(e => getEnergyImpl(this.card(e))?.immune?.includes(cond))) { this.log(`${c.name}不會${COND_NAMES[cond]}`); return; }
     if (this.hasEffect(slot, 'preventAll')) return;
     if (['asleep', 'paralyzed', 'confused'].includes(cond)) { delete slot.cond.asleep; delete slot.cond.paralyzed; delete slot.cond.confused; }
@@ -282,6 +345,11 @@ export class Game {
     this.log(`${c.name}陷入${COND_NAMES[cond]}狀態`, 'cond');
   }
   clearConditions(slot) { slot.cond = {}; }
+  conditionImmune(slot) {
+    if (this.toolOf(slot).noConditions?.(this, slot)) return true;
+    if (this.stadium && getStadiumImpl(this.card(this.stadium.inst)).energyNoConditions && slot.energy.length) return true;
+    return false;
+  }
 
   // ---------- 換位 ----------
   switchActive(p, benchSlot) {
@@ -294,6 +362,8 @@ export class Game {
     }
     p.active = benchSlot;
     this.log(`${p.name}的${this.top(benchSlot).name}上場成為戰鬥寶可夢`);
+    if (p === this.me && this.abilityOf(benchSlot)?.onPromote) (this.triggers ||= []).push({ p, slot: benchSlot });
+    if (old && p === this.me && this.abilityOf(old)?.onToBench) (this.triggers ||= []).push({ p, slot: old, kind: 'toBench' });
   }
   async chooseBench(p, chooser, title, purpose, optional = false) {
     if (!p.bench.length) return null;
@@ -334,14 +404,21 @@ export class Game {
             const byOppAttack = attackCtx && attackCtx.attackerOwner !== p;
             if (byOppAttack) p.lastKoByAttackTypes.push({ turn: this.turn, type: c.type });
             const wasActive = p.active === slot;
-            const tool = slot.tool ? getToolImpl(this.card(slot.tool)) : null;
+            const tool = slot.tool ? this.toolOf(slot) : null;
+            const slotAbility = this.abilityOf(slot);
+            const legacy = slot.energy.some(e => this.card(e).name === '古舊能量');
             this.discardSlot(p, slot);
             const taker = this.opp(p);
             let n = prizeValue(c);
             if (attackCtx?.extraPrize && attackCtx.attackerOwner === taker) n += attackCtx.extraPrize;
+            if (wasActive && attackCtx && attackCtx.attackerOwner === taker && this.top(attackCtx.attacker).tera && this.playerEffect(taker, 'teraExtraPrize').length) n++;
             // 「奇跡之吻」
             if (wasActive && this.slots(taker).some(s => this.abilityOf(s)?.miracleKiss) && this.coin(taker, '奇跡之吻')) { n++; this.log('「奇跡之吻」多獲得1張獎賞卡！'); }
             if (byOppAttack && tool?.onKO) await tool.onKO(this, p);
+            if (byOppAttack && tool?.extraPrize && !hasRule(c)) n += tool.extraPrize;
+            if (byOppAttack && slotAbility?.prizeReduce?.(this, p)) { n--; this.log('被獲得的獎賞卡減少1張'); }
+            if (byOppAttack && legacy && !p.legacyUsed) { n--; p.legacyUsed = true; this.log('「古舊能量」使被獲得的獎賞卡減少1張'); }
+            n = Math.max(0, n);
             await this.takePrizes(taker, n);
           }
         }
@@ -446,15 +523,43 @@ export class Game {
       if (!act || act.type === 'end') break;
       if (act.type === 'forfeit') this.finish(1 - p.index, '對手投降');
       const endsTurn = await this.perform(p, act);
+      await this.runTriggers();
       this.emit();
       if (endsTurn) break;
     }
+    await this.runTriggers();
+    // 「納莉」：回合結束時手牌5張以上則全部丟棄
+    if (this.playerEffect(p, 'endTurnDiscardHand').length && p.hand.length >= 5) { p.discard.push(...p.hand); p.hand = []; this.log(`${p.name}將手牌全部丟棄`); }
     await this.betweenTurns();
     this.current = 1 - this.current;
   }
 
+  async runTriggers() {
+    while (this.triggers?.length) {
+      const t = this.triggers.shift();
+      if (!this.slots(t.p).includes(t.slot)) continue;
+      const ab = this.abilityOf(t.slot);
+      const fn = t.kind === 'toBench' ? ab?.onToBench : ab?.onPromote;
+      if (!fn || (ab.canTrigger && !ab.canTrigger(this, t.p, t.slot))) continue;
+      const c = this.top(t.slot);
+      const yes = await this.ask(t.p, { kind: 'yesno', title: `要使用「${c.abilities[0].name}」嗎？`, purpose: 'onEvolve', card: c.id });
+      if (!yes) continue;
+      this.log(`${c.name}使用了特性「${c.abilities[0].name}」`, 'ability');
+      this.emit('ability', { slot: t.slot.id });
+      await fn(this, t.p, t.slot);
+      await this.checkKnockouts();
+    }
+  }
+
   async betweenTurns() {
     const p = this.me;
+    // 延遲效果（「滲透寒氣」）
+    for (const pl of this.players) for (const s of this.slots(pl)) for (const e of s.effects) if (e.kind === 'delayedCounters' && e.turn === this.turn) this.placeCounters(s, e.n);
+    // 「冰冷之帳」
+    const chill = this.players.flatMap(pl => this.slots(pl)).filter(s => this.abilityOf(s)?.chillCurtain);
+    if (chill.length) for (const pl of this.players) for (const s of this.slots(pl)) { const c = this.top(s); if (c.abilities.length && c.name !== '雪妖女') { s.damage += 10; this.log(`「冰冷之帳」在${c.name}身上放置1個傷害指示物`, 'dmg'); } }
+    // 「祭典會場」等：恢復特殊狀態
+    for (const pl of this.players) if (pl.active && Object.keys(pl.active.cond).length && this.conditionImmune(pl.active)) this.clearConditions(pl.active);
     for (const pl of [p, this.opp(p)]) {
       const s = pl.active;
       if (!s) continue;
@@ -487,16 +592,23 @@ export class Game {
       const c = this.card(inst);
       if (isPokemon(c)) {
         if (c.stage === 0 && p.bench.length < 5) acts.push({ type: 'bench', uid: inst.uid });
-        if (c.stage > 0 && !firstTurnOfPlayer) {
+        if (c.stage > 0) {
           for (const s of this.slots(p)) {
             const t = this.top(s);
-            if (t.name === c.from && s.playedTurn !== this.turn && s.evolvedTurn !== this.turn) acts.push({ type: 'evolve', uid: inst.uid, target: s.id });
+            const ab = this.abilityOf(s);
+            const matches = t.name === c.from || (ab?.evolveIntoEeveeEx && c.from === '伊布' && c.ex);
+            if (!matches || s.evolvedTurn === this.turn) continue;
+            // 「提升進化」：在戰鬥場上時，第一回合或剛使出的回合也可進化
+            const anytime = ab?.evolveAnytime && p.active === s;
+            if (!anytime && (firstTurnOfPlayer || s.playedTurn === this.turn)) continue;
+            acts.push({ type: 'evolve', uid: inst.uid, target: s.id });
           }
         }
       } else if (isEnergy(c)) {
         if (!p.energyAttached) for (const s of this.slots(p)) if (!this.hasEffect(s, 'noEnergyAttach')) acts.push({ type: 'energy', uid: inst.uid, target: s.id });
       } else {
         const impl = getTrainerImpl(c);
+        if (c.trainer === 'Item' && this.playerEffect(p, 'noItems').length) continue;
         if (c.trainer === 'Supporter' && (p.supporterPlayed || (this.turn === 1 && !impl.firstTurnOk))) continue;
         if (c.trainer === 'Stadium' && (p.stadiumPlayed || (this.stadium && this.card(this.stadium.inst).name === c.name))) continue;
         if (c.trainer === 'Tool') {
@@ -537,7 +649,7 @@ export class Game {
   canUseAttack(p, slot, idx) {
     const c = this.top(slot);
     const atk = c.attacks[idx];
-    if (!this.canPay(this.attackCost(slot, atk), this.energyUnits(slot))) return false;
+    if (!this.canPayFor(slot, this.attackCost(slot, atk))) return false;
     if (this.hasEffect(slot, 'noAttack')) return false;
     if (this.playerEffect(p, 'lowEnergyNoAttack').length && this.countEnergy(slot) <= 2) return false;
     const sab = this.abilityOf(slot);
@@ -695,8 +807,20 @@ export class Game {
     p.lastAttacker = { turn: this.turn, slot: a.id, card: c.id };
     this.inAttack = true;
     this.lastAttackCtx = null;
+    this.currentAttacker = a;
+    p.lastAttackNames = { turn: this.turn, name: atk.name };
     try { await this.resolveAttack(p, a, c, idx, atk, o); } finally { this.inAttack = false; }
     await this.checkKnockouts(this.lastAttackCtx);
+    // 「祭典樂舞」：場上有「祭典會場」時可使用招式2次
+    const ab = this.abilityOf(a);
+    if (ab?.doubleAttack?.(this) && p.active === a && this.opp(p).active && this.canUseAttack(p, a, idx)) {
+      this.log(`${c.name}的「祭典樂舞」：再使用一次「${atk.name}」`, 'attack');
+      this.emit('attack', { slot: a.id, name: atk.name, ptype: c.type, target: this.opp(p).active?.id, player: p.index });
+      this.inAttack = true;
+      try { await this.resolveAttack(p, a, c, idx, atk, this.opp(p)); } finally { this.inAttack = false; }
+      await this.checkKnockouts(this.lastAttackCtx);
+    }
+    this.currentAttacker = null;
   }
 
   async resolveAttack(p, a, c, idx, atk, o) {
@@ -705,6 +829,7 @@ export class Game {
       g: this, me: p, opp: o, attacker: a, defender: o.active, atk, card: c,
       base: parseInt(atk.dmg) || 0, opts: {}, attackerOwner: p, extraPrize: 0, data: {},
     };
+    if (this.abilityOf(a)?.ignoreDefenderEffects) ctx.opts.ignoreEffects = true;
     let failed = false;
     if (impl.before) failed = (await impl.before(ctx)) === false;
     if (failed) {

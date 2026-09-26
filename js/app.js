@@ -147,7 +147,7 @@ function shop() {
   mount(`<h2>商店</h2>
     <p class="sub">用對戰贏得的金幣購買卡包。每包5張卡，稀有度：C ● / U ◆ / R ★ / RR ★★ / SR ★★★ / ACE SPEC</p>
     <div class="pack-row">${PACKS.map(p => `<div class="pack" style="--pc:${p.color}">
-      <div class="pack-art"><div class="pack-logo">${esc(p.name)}</div><div class="pack-cover">${cardHTML({ basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', ex: 'SV1S-028' }[p.id], { small: true })}</div></div>
+      <div class="pack-art"><div class="pack-logo">${esc(p.name)}</div><div class="pack-cover">${cardHTML({ basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', sv8a: 'SV8a-136', ex: 'SV1S-028' }[p.id], { small: true })}</div></div>
       <p>${esc(p.desc)}</p>
       <div class="pack-buy"><span>🪙 ${p.price}</span>
         <button class="btn primary" data-buy="${p.id}" ${s.coins < p.price ? 'disabled' : ''}>購買1包</button>
