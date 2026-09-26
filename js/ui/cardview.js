@@ -1,6 +1,7 @@
 // 卡片外觀（以CSS繪製，可選擇載入官方卡圖）
 import { cardData, stageName, TYPE_NAMES } from '../engine/cards.js';
 import { COND_NAMES } from '../engine/game.js';
+import { IMAGE_IDS } from '../data/images.js';
 
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
@@ -13,19 +14,15 @@ export function energyIcon(t, cls = '') {
   return `<span class="eicon t-${t} ${cls}" title="${TYPE_NAMES[t]}">${t === '*' ? '★' : TYPE_NAMES[t]}</span>`;
 }
 
-// 官方卡圖（tcgdex 素材庫），載入失敗時自動移除
-export function imageUrls(c) {
-  const [set, num] = c.id.split('-');
-  const serie = set.startsWith('M') && !set.startsWith('MC') ? 'M' : 'SV';
-  return [
-    `https://assets.tcgdex.net/zh-tw/${serie}/${set}/${num}/high.webp`,
-    `https://assets.tcgdex.net/ja/${serie}/${set}/${num}/high.webp`,
-  ];
+// 官方卡圖（台灣寶可夢卡牌官方訓練家網站），載入失敗時自動改用文字卡面
+export function imageUrl(c) {
+  const id = IMAGE_IDS[c.id];
+  return id ? `https://asia.pokemon-card.com/tw/card-img/tw${String(id).padStart(8, '0')}.png` : null;
 }
 export function imgTag(c) {
-  if (!showImages || c.cat === 'E' && c.energy === 'basic') return '';
-  const [a, b] = imageUrls(c);
-  return `<img class="card-img" loading="lazy" alt="" src="${a}" data-alt="${b}" onload="this.classList.add('ok')" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
+  const url = showImages && imageUrl(c);
+  if (!url) return '';
+  return `<img class="card-img" loading="lazy" alt="" src="${url}" onload="this.classList.add('ok')" onerror="this.remove()">`;
 }
 
 const RARITY_MARK = { C: '●', U: '◆', R: '★', RR: '★★', SR: '★★★', ACE: 'ACE' };

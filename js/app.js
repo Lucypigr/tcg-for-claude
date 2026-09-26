@@ -445,7 +445,7 @@ function rules() {
       <li>點擊自己的戰鬥寶可夢：使用招式、撤退或特性。</li>
       <li>點擊對手的寶可夢或棄牌區：查看詳細資訊。</li></ul>
     <h3>關於卡片資料</h3>
-    <p class="sub">卡片名稱與效果文字取自繁體中文版卡片資料（tcgdex 卡片資料庫 data-asia）。以「ex初階牌組 皮卡丘」(SVQP) 為起始牌組藍本，AI牌組參考2026年標準賽制主流牌組；超級進化系列卡片依日文版內容翻譯。本作為玩家自製的非官方同人遊戲。</p>
+    <p class="sub">卡片名稱與效果文字取自繁體中文版卡片資料（tcgdex 卡片資料庫 data-asia）。以「ex初階牌組 皮卡丘」(SVQP) 為起始牌組藍本，AI牌組參考2026年標準賽制主流牌組；超級進化系列卡片依日文版內容翻譯。卡圖取自寶可夢集換式卡牌官方訓練家網站（台灣）。本作為玩家自製的非官方同人遊戲。</p>
     <div class="danger-zone"><button class="btn danger" id="reset">重置存檔</button></div>
   </div>`, 'rules');
   app.querySelector('#reset').onclick = async () => {
