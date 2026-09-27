@@ -89,7 +89,7 @@ async function tutorial() {
   if (!go) { route('home'); return; }
   app.innerHTML = '<div id="battle-root"></div>';
   const view = new BattleView(app.querySelector('#battle-root'), {
-    playerDeck: TUTORIAL_BATTLE.playerDeck, aiDeck: TUTORIAL_BATTLE.aiDeck, level: 'easy', tutorial: TUTORIAL_BATTLE,
+    playerDeck: TUTORIAL_BATTLE.playerDeck, aiDeck: TUTORIAL_BATTLE.aiDeck, level: 'normal', tutorial: TUTORIAL_BATTLE,
     onEnd: async (won) => {
       const s = store.load();
       const first = !s.tutorialDone;

@@ -108,7 +108,7 @@ export const TUTORIAL_BATTLE = {
   firstPlayer: 0,
   stacks: {
     0: { hand: ['SVD-034', 'SVD-036', 'SVD-118', 'SVD-LIG', 'SVD-LIG', 'SVD-035', 'SVD-133'], draws: ['SVD-LIG', 'SVD-LIG', 'SVC-001', 'SVD-LIG'] },
-    1: { hand: ['SVD-030', 'SVD-WAT', 'SVD-WAT', 'SVD-WAT', 'SVD-115', 'SVD-WAT', 'SVD-133'], draws: ['SVD-WAT', 'SVD-024', 'SVD-WAT'] },
+    1: { hand: ['SVD-030', 'SVD-WAT', 'SVD-WAT', 'SVD-WAT', 'SVD-115', 'SVD-WAT', 'SVD-133'], draws: ['SVD-024', 'SVD-WAT', 'SVD-027', 'SVD-WAT'] },
   },
 };
 
@@ -133,7 +133,7 @@ export const TUTORIAL_STEPS = [
     text: '你先攻！回合開始時會自動抽 1 張卡。先試試訓練家卡：點手牌中發光的「<b>巢穴球</b>」，再按「使用」。',
     modalText: '在視窗中選擇要放到備戰區的寶可夢，然後按「確定」。',
     target: () => (modalOpen() ? '.modal .pick, .modal-buttons .btn.primary' : '#hand .mini[data-cid="SVD-118"]'),
-    done: (g, evs) => ev(evs, e => e.type === 'trainer' && e.player === 0) && !modalOpen(),
+    done: (g, evs) => ev(evs, e => e.type === 'trainer' && e.player === 0) && !g.inPlayTrainer && !modalOpen(),
     skip: g => g.current === 0 && g.turn === 1 && !handHas(g, 'SVD-118'),
   },
   {
