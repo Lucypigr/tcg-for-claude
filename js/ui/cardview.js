@@ -106,7 +106,8 @@ export function miniCardHTML(c, { uid = '', playable = false, selected = false, 
   if (c.cat === 'P') sub = `${stageName(c)} HP${c.hp}`;
   else sub = stageName(c);
   const glyph = c.cat === 'P' ? TYPE_NAMES[c.type] : c.cat === 'E' ? TYPE_NAMES[c.provides || 'C'] : { Item: '物', Supporter: '支', Stadium: '場', Tool: '具' }[c.trainer];
-  return `<div class="mini ${typeCls} ${playable ? 'playable' : ''} ${selected ? 'selected' : ''} ${c.ex ? 'is-ex' : ''}" data-uid="${uid}" data-cid="${c.id}">
+  const holo = holoLevel(c);
+  return `<div class="mini ${typeCls} ${playable ? 'playable' : ''} ${selected ? 'selected' : ''} ${c.ex ? 'is-ex' : ''} ${holo ? `holo-${holo}` : ''}" data-uid="${uid}" data-cid="${c.id}">
     <div class="mini-glyph">${glyph}</div>
     <div class="mini-name">${esc(c.name)}</div>
     <div class="mini-sub">${sub}</div>
