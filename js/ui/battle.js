@@ -6,6 +6,7 @@ import { deckToList } from '../data/decks.js';
 import { cardHTML, miniCardHTML, slotHTML, energyIcon, esc } from './cardview.js';
 import { showModal, toast } from './modal.js';
 import { FX } from './fx.js';
+import { Coach, TUTORIAL_STEPS } from './tutorial.js';
 
 const LEVEL_NAME = { easy: '簡單', normal: '普通', hard: '困難' };
 
@@ -31,7 +32,9 @@ class HumanController {
 
 // ================= 對戰畫面 =================
 export class BattleView {
-  constructor(root, { playerDeck, aiDeck, level, playerName = '你', onEnd }) {
+  constructor(root, { playerDeck, aiDeck, level, playerName = '你', onEnd, tutorial = null }) {
+    this.tutorial = tutorial;
+    this.playerList = deckToList(playerDeck.cards);
     this.root = root;
     this.level = level;
     this.aiDeck = aiDeck;
@@ -54,6 +57,8 @@ export class BattleView {
       controllers: [this.human, this.ai],
       seed: Math.floor(Math.random() * 2 ** 31),
       onEvent: e => this.onEvent(e),
+      firstPlayer: tutorial?.firstPlayer ?? null,
+      stacks: tutorial?.stacks ?? null,
     });
     this.mode = null; // { kind: 'target', actions, label }
     this.fx = [];
@@ -63,6 +68,7 @@ export class BattleView {
 
   async start() {
     await this.introModal();
+    if (this.tutorial) this.coach = new Coach(this, TUTORIAL_STEPS);
     const winner = await this.game.run();
     this.render(true);
     return winner;
@@ -103,6 +109,7 @@ export class BattleView {
   }
 
   onEvent(e) {
+    this.coach?.onEvent(e);
     if (e.type === 'log') {
       const log = this.root.querySelector('#log');
       if (log) {
@@ -172,6 +179,7 @@ export class BattleView {
       const stadium = this.actionsFor(a => a.type === 'stadium');
       bar.innerHTML = `<div class="hint">點選手牌或寶可夢進行操作</div>
         ${stadium.length ? '<button class="btn" data-act="stadium">使用競技場</button>' : ''}
+        <button class="btn hint-btn" data-act="hint">💡 提示</button>
         ${attacks.length ? '<button class="btn attack-btn" data-act="attack-menu">⚔ 攻擊</button>' : ''}
         <button class="btn primary" data-act="end">結束回合</button>
         <button class="btn danger tiny" data-act="forfeit">投降</button>`;
@@ -183,6 +191,7 @@ export class BattleView {
 
     // 特效
     this.playFx();
+    if (this.hint) this.applyHint();
   }
 
   snapshotRects() {
@@ -235,6 +244,7 @@ export class BattleView {
     const h = this.human;
     if (act === 'cancel') { this.mode = null; this.render(true); return; }
     if (!h.pending) return;
+    if (act === 'hint') { this.showHint(); return; }
     if (act === 'end') {
       const canAttack = this.actionsFor(a => a.type === 'attack').length;
       if (canAttack) {
@@ -310,7 +320,7 @@ export class BattleView {
     if (slot === me.active) {
       c.attacks.forEach((atk, idx) => {
         const ok = this.actionsFor(a => a.type === 'attack' && a.idx === idx).length > 0;
-        buttons.push({ label: `⚔ ${atk.name} ${atk.dmg || ''}`, primary: ok, disabled: !ok, value: () => this.human.act({ type: 'attack', idx }) });
+        buttons.push({ label: `⚔ ${atk.name} ${atk.dmg || ''}`, primary: ok, disabled: !ok, cls: `atk-${idx}`, value: () => this.human.act({ type: 'attack', idx }) });
       });
       const rt = this.actionsFor(a => a.type === 'retreat');
       if (rt.length) buttons.push({ label: `撤退（${g.retreatCost(slot)}能量）`, value: () => this.pickTarget(rt, '選擇要換上場的備戰寶可夢') });
@@ -446,7 +456,43 @@ export class BattleView {
     });
   }
 
+  // 💡 提示：用困難AI評估目前最好的行動
+  async showHint() {
+    const g = this.game;
+    const me = g.players[0];
+    const acts = this.actionsFor(() => true);
+    if (!acts.length) return;
+    const adv = new AIController('hard', this.playerList);
+    adv.delay = 0;
+    const a = await adv.chooseAction(g, acts);
+    const handName = uid => { const i = me.hand.find(x => x.uid === uid); return i ? cardData(i.cid).name : ''; };
+    const slotName = id => { const s = g.slots(me).find(x => x.id === id); return s ? g.top(s).name : ''; };
+    const tips = {
+      bench: () => `把「${handName(a.uid)}」放到備戰區。基礎寶可夢多放幾隻，被擊倒時才有候補。`,
+      evolve: () => `讓「${slotName(a.target)}」進化成「${handName(a.uid)}」。`,
+      energy: () => `把「${handName(a.uid)}」附加到「${slotName(a.target)}」身上（每回合1次）。`,
+      trainer: () => `使用「${handName(a.uid)}」${a.target ? `，附在「${slotName(a.target)}」身上` : ''}。`,
+      ability: () => `使用「${slotName(a.target)}」的特性「${g.top(g.slots(me).find(x => x.id === a.target)).abilities[0]?.name}」。`,
+      retreat: () => `讓戰鬥寶可夢撤退，換「${slotName(a.target)}」上場。`,
+      stadium: () => '使用場上競技場卡的效果。',
+      attack: () => `用「${g.top(me.active).attacks[a.idx].name}」攻擊！攻擊後回合會結束。`,
+      end: () => '目前沒有更好的行動了，可以結束回合。',
+    };
+    const text = (tips[a.type] || tips.end)();
+    const sel = a.uid ? `#hand .mini[data-uid="${a.uid}"]` : a.type === 'attack' ? '[data-act=attack-menu]' : a.type === 'end' ? '[data-act=end]' : a.type === 'stadium' ? '[data-act=stadium]' : a.target ? `.slot[data-slot="${a.target}"]` : null;
+    this.hint = { sels: [sel, a.target && a.uid ? `.slot[data-slot="${a.target}"]` : null].filter(Boolean), until: Date.now() + 5000 };
+    this.applyHint();
+    toast(`💡 ${text}`, 'hint', 4500);
+    clearTimeout(this.hintTimer);
+    this.hintTimer = setTimeout(() => { this.hint = null; this.applyHint(); }, 5000);
+  }
+  applyHint() {
+    document.querySelectorAll('.hint-hl').forEach(el => el.classList.remove('hint-hl'));
+    if (this.hint && Date.now() < this.hint.until) for (const sel of this.hint.sels) document.querySelectorAll(sel).forEach(el => el.classList.add('hint-hl'));
+  }
+
   gameOver(winner, reason) {
+    this.coach?.destroy();
     const won = winner === 0;
     setTimeout(() => this.fxr?.destroy(), 3000);
     this.onEnd?.(won, reason);

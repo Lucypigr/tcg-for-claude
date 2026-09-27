@@ -24,7 +24,9 @@ export class GameOver extends Error {
 }
 
 export class Game {
-  constructor({ decks, names, controllers, seed = Date.now(), onEvent = () => {} }) {
+  constructor({ decks, names, controllers, seed = Date.now(), onEvent = () => {}, firstPlayer = null, stacks = null }) {
+    this.firstPlayer = firstPlayer;
+    this.stacks = stacks; // 教學用：{ 玩家索引: { hand: [卡片ID], draws: [卡片ID] } }
     this.rng = mulberry32(seed);
     this.controllers = controllers;
     this.onEvent = onEvent;
@@ -468,9 +470,20 @@ export class Game {
     return this.winner;
   }
 
+  // 教學用：指定起手手牌與之後抽到的卡（獎賞卡從其餘的卡隨機放置）
+  stackDeck(p, { hand = [], draws = [] }) {
+    this.shuffle(p.deck);
+    const take = cid => { const i = p.deck.findIndex(x => x.cid === cid); return i >= 0 ? p.deck.splice(i, 1)[0] : null; };
+    const h = hand.map(take).filter(Boolean);
+    const d = draws.map(take).filter(Boolean);
+    const prizes = p.deck.splice(0, 6);
+    p.deck = [...h, ...prizes, ...d, ...p.deck];
+  }
+
   async setup() {
     const mull = [0, 0];
     for (const p of this.players) {
+      if (this.stacks?.[p.index]) { this.stackDeck(p, this.stacks[p.index]); this.draw(p, 7); continue; }
       for (;;) {
         this.shuffle(p.deck);
         this.draw(p, 7);
@@ -485,7 +498,7 @@ export class Game {
       const extra = mull[1 - p.index];
       if (extra) { this.draw(p, extra); this.log(`${p.name}因對手重抽而多抽了${extra}張卡`); }
     }
-    this.current = this.rng() < 0.5 ? 0 : 1;
+    this.current = this.firstPlayer ?? (this.rng() < 0.5 ? 0 : 1);
     this.first = this.current;
     this.log(`擲硬幣決定先攻：${this.players[this.current].name}先攻`, 'coin');
     for (const p of this.players) {

@@ -7,6 +7,7 @@ import { PACKS, openPack, RARITY_LABEL } from './shop.js';
 import { cardHTML, miniCardHTML, esc, energyIcon, getShowImages, setShowImages } from './ui/cardview.js';
 import { showModal, toast } from './ui/modal.js';
 import { BattleView } from './ui/battle.js';
+import { showRulesSlides, TUTORIAL_BATTLE } from './ui/tutorial.js';
 
 const app = document.getElementById('app');
 const LEVELS = [
@@ -17,7 +18,7 @@ const LEVELS = [
 
 function header(active = '') {
   const s = store.load();
-  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '收藏'], ['rules', '規則']];
+  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '收藏'], ['tutorial', '教學'], ['rules', '規則']];
   return `<header class="top">
     <div class="logo" data-go="home"><span class="ball"></span>寶可夢卡牌 <b>AI對戰</b></div>
     <nav>${nav.map(([id, n]) => `<button class="nav ${active === id ? 'on' : ''}" data-go="${id}">${n}</button>`).join('')}</nav>
@@ -36,7 +37,7 @@ app.addEventListener('click', e => {
 });
 
 export function route(name, arg) {
-  ({ home, setup, decks, shop, collection, rules, edit: editDeck })[name]?.(arg);
+  ({ home, setup, decks, shop, collection, rules, tutorial, edit: editDeck })[name]?.(arg);
 }
 
 // ================= 主選單 =================
@@ -54,6 +55,7 @@ function home() {
           <button class="btn big primary" data-go="setup">⚔ 開始對戰</button>
           <button class="btn big" data-go="shop">🛒 商店</button>
           <button class="btn big" data-go="decks">🃏 牌組編輯</button>
+          <button class="btn big tutorial-btn" data-go="tutorial">📖 新手教學${s.tutorialDone ? '' : ' <span class="tag new-tag">NEW</span>'}</button>
         </div>
       </div>
     </section>
@@ -73,8 +75,37 @@ function home() {
         <li>獲勝可得金幣：簡單 ${store.REWARDS.easy.win}、普通 ${store.REWARDS.normal.win}、困難 ${store.REWARDS.hard.win}（落敗也有少量金幣）。</li>
         <li>到<b>商店</b>用金幣購買卡包，卡包會隨機掉落卡片。</li>
         <li>在<b>牌組編輯</b>中用收藏的卡片自由組牌（基本能量無限供應）。</li>
-      </ul>`, { buttons: [{ label: '開始冒險！', primary: true, value: true }] });
+      </ul>
+      <p class="tut-invite">第一次玩寶可夢卡牌嗎？建議先看<b>新手教學</b>，完成練習賽可以獲得 🪙${TUTORIAL_REWARD} 金幣！</p>`, {
+      buttons: [{ label: '之後再說', value: false }, { label: '📖 開始新手教學', primary: true, value: true }],
+    }).then(v => { if (v) tutorial(); });
   }
+}
+
+// ================= 新手教學 =================
+const TUTORIAL_REWARD = 300;
+async function tutorial() {
+  const go = await showRulesSlides();
+  if (!go) { route('home'); return; }
+  app.innerHTML = '<div id="battle-root"></div>';
+  const view = new BattleView(app.querySelector('#battle-root'), {
+    playerDeck: TUTORIAL_BATTLE.playerDeck, aiDeck: TUTORIAL_BATTLE.aiDeck, level: 'easy', tutorial: TUTORIAL_BATTLE,
+    onEnd: async (won) => {
+      const s = store.load();
+      const first = !s.tutorialDone;
+      if (first) { s.tutorialDone = true; s.coins += TUTORIAL_REWARD; store.save(); }
+      const v = await showModal(`<div class="result ${won ? 'win' : 'lose'}">
+        <div class="result-title">${won ? '🎉 練習賽勝利！' : '練習賽結束'}</div>
+        <p>你已經學會寶可夢卡牌的基本玩法了！</p>
+        ${first ? `<p class="result-coins">新手教學獎勵 🪙 <b>${TUTORIAL_REWARD}</b> 金幣</p>` : ''}
+        <p class="sub">接下來可以用起始牌組挑戰「簡單」難度的 AI，贏得金幣後到商店買卡包。</p></div>`, {
+        dismissable: false,
+        buttons: [{ label: '再看一次教學', value: 'tutorial' }, { label: '返回主選單', value: 'home' }, { label: '挑戰 AI！', primary: true, value: 'setup' }],
+      });
+      route(v);
+    },
+  });
+  try { await view.start(); } catch (e) { console.error(e); route('home'); }
 }
 
 // ================= 對戰設定 =================
@@ -446,6 +477,7 @@ function rules() {
       <li>點擊對手的寶可夢或棄牌區：查看詳細資訊。</li></ul>
     <h3>關於卡片資料</h3>
     <p class="sub">卡片名稱與效果文字取自繁體中文版卡片資料（tcgdex 卡片資料庫 data-asia）。以「ex初階牌組 皮卡丘」(SVQP) 為起始牌組藍本，AI牌組參考2026年標準賽制主流牌組；超級進化系列卡片依日文版內容翻譯。卡圖取自寶可夢集換式卡牌官方訓練家網站（台灣）。本作為玩家自製的非官方同人遊戲。</p>
+    <p><button class="btn primary" data-go="tutorial">📖 開啟新手教學（圖解＋練習賽）</button></p>
     <div class="danger-zone"><button class="btn danger" id="reset">重置存檔</button></div>
   </div>`, 'rules');
   app.querySelector('#reset').onclick = async () => {

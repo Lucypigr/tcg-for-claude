@@ -6,7 +6,7 @@ export function showModal(html, { buttons = [{ label: '確定', primary: true, v
     const wrap = document.createElement('div');
     wrap.className = 'modal-wrap';
     wrap.innerHTML = `<div class="modal ${wide ? 'wide' : ''}"><div class="modal-body"></div><div class="modal-buttons">${buttons.map((b, i) =>
-      `<button class="btn ${b.primary ? 'primary' : ''} ${b.danger ? 'danger' : ''}" data-mb="${i}" ${b.disabled ? 'disabled' : ''}>${esc(b.label)}</button>`).join('')}</div></div>`;
+      `<button class="btn ${b.primary ? 'primary' : ''} ${b.danger ? 'danger' : ''} ${b.cls || ''}" data-mb="${i}" ${b.disabled ? 'disabled' : ''}>${esc(b.label)}</button>`).join('')}</div></div>`;
     const body = wrap.querySelector('.modal-body');
     body.innerHTML = html;
     let done = false;
@@ -34,7 +34,7 @@ export function showModal(html, { buttons = [{ label: '確定', primary: true, v
 }
 
 let toastBox = null;
-export function toast(msg, cls = '') {
+export function toast(msg, cls = '', ms = 1400) {
   if (!toastBox || !document.body.contains(toastBox)) {
     toastBox = document.createElement('div');
     toastBox.className = 'toasts';
@@ -44,6 +44,6 @@ export function toast(msg, cls = '') {
   t.className = `toast ${cls}`;
   t.textContent = msg;
   toastBox.appendChild(t);
-  setTimeout(() => t.classList.add('out'), 1400);
-  setTimeout(() => t.remove(), 1800);
+  setTimeout(() => t.classList.add('out'), ms);
+  setTimeout(() => t.remove(), ms + 400);
 }
