@@ -152,6 +152,8 @@ const officialDir = path.join(here, 'official');
 const officialIds = {};
 // 尚未支援的卡：招式學習器（賦予招式的道具）
 const EXCLUDE = ['SV8-101'];
+// 官網進化線資料沒有包含化石，手動修正
+const FROM_FIX = { 冰雪龍: '陳舊的鰭之化石', 冰雪巨龍: '冰雪龍', 寶寶暴龍: '陳舊的顎之化石', 怪顎龍: '寶寶暴龍' };
 // 官網沒有標示 ACE SPEC，依卡名判定
 const ACE_NAMES = ['希望護身符', '極限腰帶', '中立中心', '豪華斗篷', '古舊能量', '寶可夢旋風回收機', '璀璨結晶', '釣竿MAX', '奇跡耳麥', '頂尖捕捉器', '秘密箱', '大師球'];
 // 需要本遊戲尚未支援的機制（從牌庫替換、使用進化前招式、猜HP、備戰區8隻、賦予招式的道具）
@@ -174,6 +176,17 @@ if (fs.existsSync(officialDir)) {
           else c.attacks.push(a);
         }
       }
+      // 超級進化寶可夢ex（昏厥時對手拿3張獎賞卡）
+      if (c.cat === 'P' && c.ex && /^超級/.test(c.name)) c.mega = true;
+      // 官網進化線沒有列出化石
+      if (FROM_FIX[c.name]) c.from = FROM_FIX[c.name];
+      // 化石：可作為HP60的【無】屬性基礎寶可夢放置於場上的物品卡
+      const fossil = c.cat === 'T' && (c.text || '').match(/^這張卡可作為HP(\d+)的【無】屬性的【基礎】寶可夢放置於場上。.*?\[特性\] (\S+) (.*)$/);
+      if (fossil) {
+        Object.assign(c, { cat: 'P', stage: 0, hp: +fossil[1], type: 'C', fossil: true, abilities: [{ name: fossil[2], text: fossil[3] }], attacks: [], weak: null, resist: null, retreat: 0, ex: false });
+      }
+      // 賦予招式的寶可夢道具（官網文字沒有招式的能量）
+      if (c.name === '核心記憶碟') c.grantAttack = { to: '超級基格爾德ex', attack: { name: '大地光炮', cost: ['F', 'F', 'F', 'F'], dmg: '350', text: '將這隻寶可夢身上附加的能量卡全部丟棄。' } };
       // 稀有度：優先使用 tcgdex 的資料
       const num = c.id.split('-')[1];
       const tfile = path.join(root, 'SV', c.set, `${num}.ts`);
@@ -195,9 +208,10 @@ const bySig = new Map();
 const final = [];
 const aliases = {}; // 被合併的重複卡 → 保留的卡片ID
 // 擴充包中編號超過一般卡的高稀有度版本（插畫/全圖/金卡）：效果與一般版相同，保留為收藏用的「特別版」
-const SECRET_FROM = { SV8: 107, SV8a: 188 };
+const SECRET_FROM = { SV8: 107, SV8a: 188, M3: 81 };
 function variantRarity(c) {
   const n = +c.id.split('-')[1];
+  if (c.set === 'M3') return n <= 92 ? 'AR' : n <= 110 ? 'SR' : n <= 116 ? 'SAR' : 'UR';
   if (c.set === 'SV8') return n <= 118 ? 'AR' : n <= 129 ? 'SR' : n <= 135 ? 'SAR' : 'UR';
   return n <= 226 ? 'SR' : n <= 235 ? 'SAR' : 'UR';
 }

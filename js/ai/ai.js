@@ -1,6 +1,6 @@
 // AI 對手：easy（簡單）/ normal（普通）/ hard（困難）
 import { cardData, isBasicEnergy, isBasicPokemon, isPokemon, prizeValue, hasRule } from '../engine/cards.js';
-import { estimateAttack, getAbilityImpl, getTrainerImpl, getProvides } from '../engine/effects.js';
+import { estimateAttack, getAbilityImpl, getTrainerImpl, getProvides, getStadiumImpl } from '../engine/effects.js';
 
 const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
@@ -165,7 +165,7 @@ export class AIController {
   }
 
   easyAction(g, p, actions) {
-    const nonEnd = actions.filter(a => a.type !== 'end' && a.type !== 'attack' && a.type !== 'retreat');
+    const nonEnd = actions.filter(a => a.type !== 'end' && a.type !== 'attack' && a.type !== 'retreat' && a.type !== 'discardFossil' && !(a.type === 'stadium' && getStadiumImpl(cardData(g.stadium.inst.cid)).endsTurn));
     const attacks = actions.filter(a => a.type === 'attack');
     // 簡單AI：隨機但有基本常識
     const useful = nonEnd.filter(a => {
@@ -231,7 +231,12 @@ export class AIController {
         return sc > 0 ? 40 + sc / 4 : 0;
       }
       case 'ability': return this.scoreAbility(g, p, a);
-      case 'stadium': return p.bench.length < 5 ? 75 : 0;
+      case 'stadium': {
+        // 「密阿雷市」等使用後回合結束的競技場：只在無法攻擊時使用
+        if (getStadiumImpl(cardData(g.stadium.inst.cid)).endsTurn) return p.bench.length < 4 && !(p.active && g.top(p.active).attacks.some((_, i) => g.canUseAttack(p, p.active, i))) ? 3 : 0;
+        return p.bench.length < 5 ? 75 : 0;
+      }
+      case 'discardFossil': return 0;
       case 'retreat': return this.scoreRetreat(g, p, a);
       case 'trainer': return this.scoreTrainer(g, p, a);
     }
@@ -308,6 +313,9 @@ export class AIController {
       case '腎上腺腦力': return 60;
       case '轟鳴引擎': return p.hand.length <= 4 ? 60 : 0;
       case '扭轉乾坤': return this.drawSafe(p, 3) ? 72 : 0;
+      case '沖刷': return p.active && this.missingEnergy(g, p.active).length > 0 ? 70 : 0;
+      case '大飛翅': return o.hand.length >= 6 ? 65 : 0;
+      case '穹天狩獵': return o.hand.length ? 60 : 0;
       default: return p.deck.length > 2 ? 72 : 0; // 抽牌/檢索類特性
     }
   }
@@ -576,6 +584,7 @@ export class AIController {
       // 避免把所有寶可夢ex都擺出
       return ranked.slice(0, max);
     }
+    if (purpose === 'optionalDiscard') return [];
     if (purpose === 'retreatDiscard' || purpose === 'discardOwnEnergy') {
       // 丟棄新戰鬥寶可夢不需要的能量
       return cards.slice(0, min || 1);

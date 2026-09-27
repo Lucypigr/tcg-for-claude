@@ -10,7 +10,7 @@ import { BattleView } from './ui/battle.js';
 import { showRulesSlides, TUTORIAL_BATTLE } from './ui/tutorial.js';
 
 // 商店卡包封面卡
-const PACK_COVER = { basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', sv8a: 'SV8a-136', ex: 'SV1S-028' };
+const PACK_COVER = { basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', sv8a: 'SV8a-136', m3: 'M3-046', ex: 'SV1S-028' };
 
 const app = document.getElementById('app');
 const LEVELS = [

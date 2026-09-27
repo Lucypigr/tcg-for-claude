@@ -10,9 +10,10 @@ const notEnergy = c => !isBasicEnergy(c) && !c.variant;
 const basicPool = CARDS.filter(c => STARTER_SETS.has(c.set) && notEnergy(c));
 // 超電突圍中原本就收錄於環境包的卡
 const SV8_META = ['SV8-034', 'SV8-035', 'SV8-036', 'SV8-095', 'SV8-102', 'SV8-103', 'SV8-104', 'SV8-105', 'SV8-106'];
-const metaPool = CARDS.filter(c => ((!STARTER_SETS.has(c.set) && c.set !== 'SV8' && c.set !== 'SV8a') || STAPLES.includes(c.id) || SV8_META.includes(c.id)) && notEnergy(c));
+const metaPool = CARDS.filter(c => ((!STARTER_SETS.has(c.set) && c.set !== 'SV8' && c.set !== 'SV8a' && c.set !== 'M3') || STAPLES.includes(c.id) || SV8_META.includes(c.id)) && notEnergy(c));
 const sv8Pool = CARDS.filter(c => c.set === 'SV8' && notEnergy(c));
 const sv8aPool = CARDS.filter(c => c.set === 'SV8a' && notEnergy(c));
+const m3Pool = CARDS.filter(c => c.set === 'M3' && notEnergy(c));
 const exPool = CARDS.filter(c => notEnergy(c) && (c.rarity !== 'C'));
 // 特別版（插畫/全圖/金卡）：效果與一般版相同，低機率取代卡包中的一張卡
 const variantPool = set => CARDS.filter(c => c.variant && (!set || c.set === set));
@@ -62,6 +63,18 @@ export const PACKS = [
     variants: variantPool('SV8a'),
     variantRate: 0.2,
     slots: [{ C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { U: 0.6, R: 0.4 }, { RR: 0.8, ACE: 0.2 }],
+  },
+  {
+    id: 'm3',
+    name: '虛無歸零 擴充包',
+    desc: '台灣官方擴充包「虛無歸零」(M3)：超級基格爾德ex、超級寶石海星ex、超級皮可西ex、伊裴爾塔爾ex、化石寶可夢等。約 15% 機率開出特別插畫版。',
+    price: 280,
+    size: 5,
+    color: '#2f8a57',
+    pool: m3Pool,
+    variants: variantPool('M3'),
+    variantRate: 0.15,
+    slots: [{ C: 1 }, { C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { R: 0.62, RR: 0.38 }],
   },
   {
     id: 'ex',

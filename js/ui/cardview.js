@@ -103,7 +103,8 @@ export function miniCardHTML(c, { uid = '', playable = false, selected = false, 
   if (typeof c === 'string') c = cardData(c);
   const typeCls = c.cat === 'P' ? `t-${c.type}` : c.cat === 'E' ? `t-${c.provides || 'C'} energy` : `trainer tr-${c.trainer}`;
   let sub = '';
-  if (c.cat === 'P') sub = `${stageName(c)} HP${c.hp}`;
+  if (c.fossil) sub = `化石 HP${c.hp}`;
+  else if (c.cat === 'P') sub = `${stageName(c)} HP${c.hp}`;
   else sub = stageName(c);
   const glyph = c.cat === 'P' ? TYPE_NAMES[c.type] : c.cat === 'E' ? TYPE_NAMES[c.provides || 'C'] : { Item: '物', Supporter: '支', Stadium: '場', Tool: '具' }[c.trainer];
   const holo = holoLevel(c);

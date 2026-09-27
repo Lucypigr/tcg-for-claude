@@ -2,6 +2,7 @@
 import { Game } from '../engine/game.js';
 import { AIController } from '../ai/ai.js';
 import { cardData, TYPE_NAMES, isPokemon } from '../engine/cards.js';
+import { getStadiumImpl } from '../engine/effects.js';
 import { deckToList } from '../data/decks.js';
 import { cardHTML, miniCardHTML, slotHTML, energyIcon, esc } from './cardview.js';
 import { showModal, toast } from './modal.js';
@@ -255,7 +256,11 @@ export class BattleView {
       showModal('<p>確定要投降嗎？將視為敗北。</p>', { buttons: [{ label: '取消', value: false }, { label: '投降', danger: true, value: true }] })
         .then(v => { if (v) h.act({ type: 'forfeit' }); });
     } else if (act === 'stadium') {
-      h.act({ type: 'stadium' });
+      const g = this.game;
+      if (getStadiumImpl(cardData(g.stadium.inst.cid)).endsTurn) {
+        showModal(`<p>使用「${esc(cardData(g.stadium.inst.cid).name)}」的效果後，你的回合會結束。確定要使用嗎？</p>`, { buttons: [{ label: '取消', value: false }, { label: '使用', primary: true, value: true }] })
+          .then(v => { if (v) h.act({ type: 'stadium' }); });
+      } else h.act({ type: 'stadium' });
     } else if (act === 'attack-menu') {
       this.slotMenu(this.game.players[0].active);
     }
@@ -327,6 +332,8 @@ export class BattleView {
     }
     const ab = this.actionsFor(a => a.type === 'ability' && a.target === slot.id);
     if (ab.length) buttons.push({ label: `✦ 特性：${c.abilities[0].name}`, primary: true, value: () => this.human.act(ab[0]) });
+    const fossil = this.actionsFor(a => a.type === 'discardFossil' && a.target === slot.id);
+    if (fossil.length) buttons.push({ label: '🗑 將化石丟棄', danger: true, value: () => this.human.act(fossil[0]) });
     buttons.push({ label: '關閉', value: null });
     const extra = [`剩餘HP：${g.hpLeft(slot)} / ${g.maxHp(slot)}`, `能量：${slot.energy.map(e => cardData(e.cid).name).join('、') || '無'}`];
     if (slot.tool) extra.push(`道具：${cardData(slot.tool.cid).name}`);
@@ -475,6 +482,7 @@ export class BattleView {
       ability: () => `使用「${slotName(a.target)}」的特性「${g.top(g.slots(me).find(x => x.id === a.target)).abilities[0]?.name}」。`,
       retreat: () => `讓戰鬥寶可夢撤退，換「${slotName(a.target)}」上場。`,
       stadium: () => '使用場上競技場卡的效果。',
+      discardFossil: () => `把場上的「${slotName(a.target)}」丟棄。`,
       attack: () => `用「${g.top(me.active).attacks[a.idx].name}」攻擊！攻擊後回合會結束。`,
       end: () => '目前沒有更好的行動了，可以結束回合。',
     };

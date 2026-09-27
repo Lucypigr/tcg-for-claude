@@ -4,6 +4,12 @@ import { cardData, isBasicPokemon, isBasicEnergy, isEnergy, isPokemon, prizeValu
 import { getAttackImpl, getAbilityImpl, getTrainerImpl, getEnergyImpl, getStadiumImpl, getToolImpl } from './effects.js';
 
 let UID = 1;
+const granted = new Map();
+function withAttack(c, atk) {
+  const key = `${c.id}+${atk.name}`;
+  if (!granted.has(key)) granted.set(key, { ...c, attacks: [...c.attacks, atk] });
+  return granted.get(key);
+}
 export const makeInst = cid => ({ uid: UID++, cid });
 
 export function mulberry32(seed) {
@@ -51,7 +57,15 @@ export class Game {
   opp(p) { return this.players[1 - p.index]; }
   get me() { return this.players[this.current]; }
   card(inst) { return cardData(inst.cid); }
-  top(slot) { return cardData(slot.cards[slot.cards.length - 1].cid); }
+  top(slot) {
+    const c = cardData(slot.cards[slot.cards.length - 1].cid);
+    // 「核心記憶碟」等賦予招式的寶可夢道具
+    if (slot.tool) {
+      const t = cardData(slot.tool.cid);
+      if (t.grantAttack?.to === c.name && !(this.stadium && getStadiumImpl(this.card(this.stadium.inst)).noTools)) return withAttack(c, t.grantAttack.attack);
+    }
+    return c;
+  }
   slots(p) { return p.active ? [p.active, ...p.bench] : [...p.bench]; }
   ownerOf(slot) { return this.players.find(p => p.active === slot || p.bench.includes(slot)); }
   isActive(slot) { return this.players.some(p => p.active === slot); }
@@ -125,6 +139,7 @@ export class Game {
     if (this.stadium) { const s = getStadiumImpl(this.card(this.stadium.inst)); if (s.hpBonus) hp += s.hpBonus(this, slot, c); }
     const ab = this.abilityOf(slot);
     if (ab?.hpBonus) hp += ab.hpBonus(this, slot);
+    for (const e of slot.energy) { const ei = getEnergyImpl(this.card(e)); if (ei?.hpBonus) hp += ei.hpBonus(this, slot, c); }
     return hp;
   }
   hpLeft(slot) { return this.maxHp(slot) - slot.damage; }
@@ -162,7 +177,7 @@ export class Game {
     const owner = this.ownerOf(slot);
     if (!owner || owner === this.me) return false;
     if (this.abilityOf(slot)?.noEffects) return true;
-    if (slot.energy.some(e => getEnergyImpl(this.card(e))?.noEffects)) return true;
+    if (slot.energy.some(e => { const ne = getEnergyImpl(this.card(e))?.noEffects; return ne === true || (typeof ne === 'function' && ne(this, slot)); })) return true;
     if (owner.active !== slot && this.benchShielded(slot)) return true;
     // 「恆星之幕」：備戰寶可夢不會因對手基礎寶可夢招式的效果被放置傷害指示物
     if (owner.active !== slot && this.placingCounters && this.currentAttacker && this.top(this.currentAttacker).stage === 0 && this.slots(owner).some(s => this.abilityOf(s)?.benchCounterShield)) return true;
@@ -323,6 +338,8 @@ export class Game {
     const blocked = this.effectBlocked(target);
     this.placingCounters = false;
     if (blocked) { this.log(`${this.top(target).name}不受招式的效果影響！`); return; }
+    // 「光之翼」：不受對手的寶可夢特性效果影響
+    if (!this.inAttack && this.ownerOf(target) !== this.me && this.abilityOf(target)?.oppAbilityImmune) { this.log(`${this.top(target).name}不受對手特性的效果影響！`); return; }
     if (this.hasEffect(target, 'preventAll') || this.effectBlocked(target)) { this.log(`${this.top(target).name}不受招式的效果影響！`); return; }
     target.damage += n * 10;
     this.log(`在${this.top(target).name}身上放置${n}個傷害指示物`, 'dmg');
@@ -348,6 +365,7 @@ export class Game {
   }
   clearConditions(slot) { slot.cond = {}; }
   conditionImmune(slot) {
+    if (this.top(slot).fossil) return true;
     if (this.toolOf(slot).noConditions?.(this, slot)) return true;
     if (this.stadium && getStadiumImpl(this.card(this.stadium.inst)).energyNoConditions && slot.energy.length) return true;
     return false;
@@ -382,8 +400,12 @@ export class Game {
   // 對手的備戰寶可夢拉上場（由自己選擇）
   async gust(me, optional = false) {
     const o = this.opp(me);
-    if (!o.bench.length) return false;
-    const s = await this.chooseBench(o, me, '選擇要拉到戰鬥場的對手備戰寶可夢', 'gust', optional);
+    // 「鰭之守護」：不受對手支援者卡的效果影響
+    const bySupporter = this.inPlayTrainer && this.card(this.inPlayTrainer).trainer === 'Supporter';
+    const cands = o.bench.filter(s => !(bySupporter && this.abilityOf(s)?.supporterImmune));
+    if (!cands.length) return false;
+    if (bySupporter && o.active && this.abilityOf(o.active)?.supporterImmune) { this.log(`${this.top(o.active).name}不受支援者卡的效果影響！`); return false; }
+    const s = await this.ask(me, { kind: 'slot', title: '選擇要拉到戰鬥場的對手備戰寶可夢', slots: cands, min: optional ? 0 : 1, purpose: 'gust', target: o.index });
     if (!s) return false;
     this.switchActive(o, s);
     return true;
@@ -409,7 +431,14 @@ export class Game {
             const tool = slot.tool ? this.toolOf(slot) : null;
             const slotAbility = this.abilityOf(slot);
             const legacy = slot.energy.some(e => this.card(e).name === '古舊能量');
-            this.discardSlot(p, slot);
+            if (byOppAttack && slotAbility?.koToHand) {
+              // 「無限之影」：寶可夢卡放回手牌，其他卡丟棄
+              this.removeSlot(p, slot);
+              const mons = slot.cards.filter(i => this.card(i).cat === 'P' && !this.card(i).fossil);
+              p.hand.push(...mons);
+              p.discard.push(...this.allCardsOf(slot).filter(i => !mons.includes(i)));
+              this.log(`${c.name}的「${c.abilities[0]?.name}」：放回了手牌`);
+            } else this.discardSlot(p, slot);
             const taker = this.opp(p);
             let n = prizeValue(c);
             if (attackCtx?.extraPrize && attackCtx.attackerOwner === taker) n += attackCtx.extraPrize;
@@ -612,8 +641,11 @@ export class Game {
             const matches = t.name === c.from || (ab?.evolveIntoEeveeEx && c.from === '伊布' && c.ex);
             if (!matches || s.evolvedTurn === this.turn) continue;
             // 「提升進化」：在戰鬥場上時，第一回合或剛使出的回合也可進化
-            const anytime = ab?.evolveAnytime && p.active === s;
-            if (!anytime && (firstTurnOfPlayer || s.playedTurn === this.turn)) continue;
+            const anytime = typeof ab?.evolveAnytime === 'function' ? ab.evolveAnytime(this, p, s) : ab?.evolveAnytime && p.active === s;
+            // 「活力森林」：剛使出的回合也可進化（自己的最初回合除外）
+            const st = this.stadium && getStadiumImpl(this.card(this.stadium.inst));
+            const sameTurn = st?.evolveSameTurn?.(t, c) && !firstTurnOfPlayer;
+            if (!anytime && (firstTurnOfPlayer || (s.playedTurn === this.turn && !sameTurn))) continue;
             acts.push({ type: 'evolve', uid: inst.uid, target: s.id });
           }
         }
@@ -622,6 +654,7 @@ export class Game {
       } else {
         const impl = getTrainerImpl(c);
         if (c.trainer === 'Item' && this.playerEffect(p, 'noItems').length) continue;
+        if (c.fossil) { if (p.bench.length < 5) acts.push({ type: 'bench', uid: inst.uid }); continue; }
         if (c.trainer === 'Supporter' && (p.supporterPlayed || (this.turn === 1 && !impl.firstTurnOk))) continue;
         if (c.trainer === 'Stadium' && (p.stadiumPlayed || (this.stadium && this.card(this.stadium.inst).name === c.name))) continue;
         if (c.trainer === 'Tool') {
@@ -639,6 +672,8 @@ export class Game {
         if (!ab.canUse || ab.canUse(this, p, s)) acts.push({ type: 'ability', target: s.id });
       }
     }
+    // 化石：在自己的回合可將場上的化石丟棄
+    for (const s of this.slots(p)) if (this.top(s).fossil && (s !== p.active || p.bench.length)) acts.push({ type: 'discardFossil', target: s.id });
     // 竟技場效果（深缽鎮）
     if (this.stadium) {
       const st = getStadiumImpl(this.card(this.stadium.inst));
@@ -646,7 +681,7 @@ export class Game {
     }
     const a = p.active;
     if (a) {
-      if (!p.retreated && p.bench.length && !a.cond.paralyzed && !a.cond.asleep && !this.hasEffect(a, 'noRetreat') && this.countEnergy(a) >= this.retreatCost(a)) {
+      if (!p.retreated && p.bench.length && !this.top(a).fossil && !a.cond.paralyzed && !a.cond.asleep && !this.hasEffect(a, 'noRetreat') && this.countEnergy(a) >= this.retreatCost(a)) {
         for (const b of p.bench) acts.push({ type: 'retreat', target: b.id });
       }
       if (!(this.turn === 1) && !a.cond.paralyzed && !a.cond.asleep) {
@@ -730,7 +765,7 @@ export class Game {
           p.stadiumPlayed = true;
           return false;
         }
-        if (c.trainer === 'Supporter') p.supporterPlayed = true;
+        if (c.trainer === 'Supporter') { p.supporterPlayed = true; p.effects.push({ kind: 'playedSupporter', name: c.name, turn: this.turn }); }
         const impl = getTrainerImpl(c);
         this.inPlayTrainer = inst;
         try {
@@ -757,6 +792,14 @@ export class Game {
         p.abilityUsed.stadium = true;
         this.log(`${p.name}使用了競技場「${this.card(this.stadium.inst).name}」的效果`);
         await st.use(this, p);
+        await this.checkKnockouts();
+        return !!st.endsTurn;
+      }
+      case 'discardFossil': {
+        const s = this.findSlot(p, act.target);
+        this.log(`${p.name}將場上的${this.top(s).name}丟棄`);
+        this.discardSlot(p, s);
+        await this.checkKnockouts();
         return false;
       }
       case 'retreat': {
@@ -838,6 +881,8 @@ export class Game {
 
   async resolveAttack(p, a, c, idx, atk, o) {
     const impl = getAttackImpl(c, idx);
+    // 「潑沙」：擲硬幣若為反面則招式失敗
+    if (this.hasEffect(a, 'attackCoinFail') && !this.coin(p, '潑沙')) { this.log(`招式「${atk.name}」失敗了`); this.lastAttackCtx = null; return; }
     const ctx = {
       g: this, me: p, opp: o, attacker: a, defender: o.active, atk, card: c,
       base: parseInt(atk.dmg) || 0, opts: {}, attackerOwner: p, extraPrize: 0, data: {},

@@ -11,8 +11,9 @@ export function cardData(cid) {
 export const TYPE_NAMES = { G: '草', R: '火', W: '水', L: '雷', P: '超', F: '鬥', D: '惡', M: '鋼', N: '龍', C: '無' };
 export const BASIC_ENERGY_ID = { G: 'SVD-GRA', R: 'SVD-FIR', W: 'SVD-WAT', L: 'SVD-LIG', P: 'SVD-PSY', F: 'SVD-FIG', D: 'SVD-DAR', M: 'SVD-MET' };
 
-export const isPokemon = c => c.cat === 'P';
-export const isBasicPokemon = c => c.cat === 'P' && c.stage === 0;
+// 化石（物品卡，可作為基礎寶可夢放置於場上）不算寶可夢卡
+export const isPokemon = c => c.cat === 'P' && !c.fossil;
+export const isBasicPokemon = c => c.cat === 'P' && c.stage === 0 && !c.fossil;
 export const isTrainer = c => c.cat === 'T';
 export const isEnergy = c => c.cat === 'E';
 export const isBasicEnergy = c => c.cat === 'E' && c.energy === 'basic';
@@ -27,6 +28,7 @@ export const isFuture = c => c.cat === 'P' && FUTURE.includes(baseName(c));
 export const prizeValue = c => (c.mega ? 3 : c.ex ? 2 : 1);
 
 export function stageName(c) {
+  if (c.fossil) return '物品（化石）';
   if (c.cat === 'P') return ['基礎', '1階進化', '2階進化'][c.stage];
   if (c.cat === 'T') return { Item: '物品', Supporter: '支援者', Stadium: '競技場', Tool: '寶可夢道具' }[c.trainer] || '訓練家';
   return c.energy === 'basic' ? '基本能量' : '特殊能量';

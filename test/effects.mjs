@@ -78,5 +78,84 @@ const energy = (s, cid, n = 1) => { for (let i = 0; i < n; i++) s.energy.push(ma
   g.placeCounters(bench, 3);
   ok(bench.damage === 0, '球形盾牌：備戰寶可夢不受招式傷害與傷害指示物');
 }
+// 8. 虛無歸零：化石可放到備戰區、不能撤退、不會陷入特殊狀態、可丟棄，並可進化
+{
+  const g = setup(); const [A, B] = g.players;
+  put(g, A, 'SVD-092'); put(g, B, 'SVD-092');
+  const f = makeInst('M3-069'); A.hand.push(f);
+  ok(g.legalActions(A).some(a => a.type === 'bench' && a.uid === f.uid), '陳舊的鰭之化石可以放到備戰區');
+  await g.perform(A, { type: 'bench', uid: f.uid });
+  const fs = A.bench.find(s => s.cards[0] === f);
+  ok(fs && g.maxHp(fs) === 60, '化石在場上是HP60的寶可夢');
+  g.switchActive(A, fs);
+  ok(!g.legalActions(A).some(a => a.type === 'retreat'), '化石無法撤退');
+  g.setCondition(fs, 'poison');
+  ok(!fs.cond.poison, '化石不會陷入特殊狀態');
+  g.turn = 5; fs.playedTurn = 3;
+  A.hand.push(makeInst('M3-022'));
+  ok(g.legalActions(A).some(a => a.type === 'evolve' && a.target === fs.id), '冰雪龍可以從陳舊的鰭之化石進化');
+  ok(g.legalActions(A).some(a => a.type === 'discardFossil' && a.target === fs.id), '可以把場上的化石丟棄');
+}
+// 9. 化石不能當作起手的基礎寶可夢
+{
+  const { validateDeck } = await import('../js/engine/cards.js');
+  ok(validateDeck(Object.fromEntries([['M3-068', 4], ['SVD-FIG', 56]])).some(e => /基礎寶可夢/.test(e)), '只有化石的牌組不符合「至少1張基礎寶可夢」');
+}
+// 10. 核心記憶碟：超級基格爾德ex可使用大地光炮
+{
+  const g = setup(); const [A, B] = g.players;
+  const z = put(g, A, 'M3-046'); energy(z, 'SVD-FIG', 4);
+  const def = put(g, B, 'SV8a-134'); put(g, B, 'SVD-092', true);
+  ok(g.top(z).attacks.length === 2, '沒有道具時只有2個招式');
+  z.tool = makeInst('M3-072');
+  ok(g.top(z).attacks.length === 3 && g.canUseAttack(A, z, 2), '附上核心記憶碟後可以使用大地光炮');
+  await g.attack(A, 2);
+  ok(!g.slots(B).includes(def) && z.energy.length === 0, '大地光炮擊倒了對手並丟棄能量');
+}
+// 11. 耿鬼「無限之影」：被招式擊倒時放回手牌
+{
+  const g = setup(); const [A, B] = g.players;
+  const atk = put(g, A, 'SV6-081'); energy(atk, 'SVD-FIR'); energy(atk, 'SVD-PSY');
+  const gg = put(g, B, 'M3-049'); energy(gg, 'SVD-DAR');
+  put(g, B, 'SVD-092', true);
+  gg.damage = 120;
+  g.inAttack = true; g.currentAttacker = atk;
+  g.dealAttackDamage(atk, gg, 100, {});
+  g.inAttack = false;
+  await g.checkKnockouts({ attackerOwner: A, attacker: atk });
+  ok(B.hand.filter(i => i.cid === 'M3-049').length === 1 && B.discard.some(i => i.cid === 'SVD-DAR'), '耿鬼回到手牌，能量丟棄');
+  ok(A.prizes.length === 5, '對手仍然獲得獎賞卡');
+}
+// 12. 伊裴爾塔爾ex「死亡靈魂」：擊倒所有剩餘HP 50以下的寶可夢
+{
+  const g = setup(); const [A, B] = g.players;
+  const y = put(g, A, 'M3-052'); energy(y, 'SVD-DAR', 3);
+  const a1 = put(g, B, 'SVD-092'); const b1 = put(g, B, 'SVD-092', true); const b2 = put(g, B, 'SVD-092', true);
+  a1.damage = g.maxHp(a1) - 40; b1.damage = g.maxHp(b1) - 50; b2.damage = 0;
+  const idx = g.top(y).attacks.findIndex(x => x.name === '死亡靈魂');
+  energy(y, 'SVD-DAR', 3);
+  await g.attack(A, idx);
+  ok(!g.slots(B).includes(b1) && g.slots(B).includes(b2), '死亡靈魂擊倒了剩餘HP 50以下的寶可夢');
+}
+// 13. 冰雪巨龍「凍原堡壘」：附有水能量的寶可夢受到傷害-50
+{
+  const g = setup(); const [A, B] = g.players;
+  const atk = put(g, A, 'SVD-092');
+  const def = put(g, B, 'SVD-092'); energy(def, 'SVD-WAT');
+  put(g, B, 'M3-023', true);
+  g.inAttack = true; g.currentAttacker = atk;
+  const d = g.dealAttackDamage(atk, def, 100, {});
+  ok(d === 50, `凍原堡壘：100 → ${d}`);
+}
+// 14. 密阿雷市：使用後回合結束
+{
+  const g = setup(); const [A, B] = g.players;
+  put(g, A, 'SVD-092'); put(g, B, 'SVD-092');
+  A.deck.unshift(makeInst('SVD-092'));
+  g.stadium = { inst: makeInst('M3-077'), owner: 0 };
+  ok(g.legalActions(A).some(a => a.type === 'stadium'), '可以使用密阿雷市');
+  const ends = await g.perform(A, { type: 'stadium' });
+  ok(ends === true && A.bench.length === 1, '密阿雷市：放置基礎寶可夢後回合結束');
+}
 console.log(fail ? `${fail} 項失敗` : '全部通過');
 process.exit(fail ? 1 : 0);
