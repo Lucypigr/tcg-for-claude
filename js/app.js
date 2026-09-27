@@ -217,44 +217,71 @@ async function buy(packId, n) {
   shop();
 }
 
-// 開包：每包先滑動撕開，再翻開卡片
+// 開包（沉浸式）：全螢幕舞台 → 滑動撕開卡包 → 卡片從包裡升起成一疊，逐張滑走 → 本包總覽
+const rankOf = c => RARITY_RANK[c.rarity] || 0;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const buzz = ms => { if (navigator.vibrate) try { navigator.vibrate(ms); } catch { /* ignore */ } };
+
 async function packOpening(cards, before, pack) {
   const seen = { ...before };
   const isNew = cards.map(c => { const n = !seen[c.id]; seen[c.id] = (seen[c.id] || 0) + 1; return n; });
   const total = Math.ceil(cards.length / pack.size);
-  for (let p = 0; p < total; p++) {
-    const from = p * pack.size;
-    const chunk = cards.slice(from, from + pack.size);
-    const best = Math.max(...chunk.map(c => RARITY_RANK[c.rarity] || 0));
-    const skip = await tearPack(pack, p, total, best);
-    if (skip) {
-      await revealCards(cards.slice(from), isNew.slice(from), pack, '完成');
-      return;
+  const stage = document.createElement('div');
+  stage.className = 'po-stage';
+  stage.style.setProperty('--pc', pack.color);
+  stage.innerHTML = `<div class="po-rays"></div><div class="po-banner">卡牌包<b>開封！</b></div>
+    <div class="po-top"><span class="po-count"></span><span class="po-top-btns"></span></div>
+    <div class="po-main"></div><div class="po-foot"></div>`;
+  document.body.appendChild(stage);
+  document.body.classList.add('po-lock');
+  const ctx = { stage, main: stage.querySelector('.po-main'), foot: stage.querySelector('.po-foot'), skip: false, skipAll: false };
+  const skipBtns = stage.querySelector('.po-top-btns');
+  const cellsOf = (from, to) => cards.slice(from, to).map((c, i) => ({ c, isNew: isNew[from + i] }));
+  try {
+    for (let p = 0; p < total; p++) {
+      const from = p * pack.size;
+      const chunk = cellsOf(from, from + pack.size);
+      const left = total - p;
+      stage.querySelector('.po-count').textContent = `${pack.name}${total > 1 ? `・${p + 1} / ${total}` : ''}`;
+      skipBtns.innerHTML = `<button class="po-skip" data-po="skip">略過 ▸</button>${left > 1 ? '<button class="po-skip" data-po="all">全部略過 ▸▸</button>' : ''}`;
+      skipBtns.querySelector('[data-po="skip"]').onclick = () => { ctx.skip = true; ctx.onSkip?.(); };
+      const all = skipBtns.querySelector('[data-po="all"]');
+      if (all) all.onclick = () => { ctx.skip = ctx.skipAll = true; ctx.onSkip?.(); };
+      ctx.skip = false;
+      const best = Math.max(...chunk.map(x => rankOf(x.c)));
+      await poTear(ctx, pack, best);
+      if (!ctx.skip) await poStack(ctx, chunk);
+      skipBtns.innerHTML = '';
+      if (ctx.skipAll) { await poSummary(ctx, cellsOf(from), '完成'); break; }
+      await poSummary(ctx, chunk, p === total - 1 ? '完成' : `下一包（${p + 2}/${total}）`);
     }
-    await revealCards(chunk, isNew.slice(from, from + pack.size), pack, p < total - 1 ? `下一包（${p + 2}/${total}）` : '完成');
+  } finally {
+    stage.classList.add('closing');
+    document.body.classList.remove('po-lock');
+    setTimeout(() => stage.remove(), 250);
   }
 }
 
-// 滑動撕開卡包（滑鼠拖曳或手指滑動），回傳 true 表示略過剩下的動畫
-function tearPack(pack, idx, total, best) {
+// 第一階段：卡包漂浮，沿上緣虛線滑動撕開
+function poTear(ctx, pack, best) {
   return new Promise(resolve => {
-    const stage = document.createElement('div');
-    stage.className = `tear-stage ${best >= 5 ? 'rare-glow' : best >= 3 ? 'gold-glow' : ''}`;
-    stage.innerHTML = `
-      <div class="tear-count">${esc(pack.name)}${total > 1 ? `・第 ${idx + 1} / ${total} 包` : ''}</div>
-      <div class="tpack" style="--pc:${pack.color}">
+    const { stage, main, foot } = ctx;
+    stage.classList.remove('po-summary-mode');
+    stage.classList.toggle('rare-glow', best >= 5);
+    stage.classList.toggle('gold-glow', best >= 3 && best < 5);
+    main.innerHTML = `<div class="tpack po-pack" style="--pc:${pack.color}">
         <div class="tpack-top"><span>✂ ─ ─ ─ ─ ─ ─ ─ ─</span></div>
         <div class="tpack-body"><div class="pack-logo">${esc(pack.name)}</div><div class="pack-cover">${cardHTML(PACK_COVER[pack.id], { small: true })}</div></div>
         <div class="tear-line"><div class="tear-progress"></div><div class="tear-spark"></div></div>
         <div class="tear-hand">👆</div>
-      </div>
-      <p class="tear-hint">沿著卡包上方的虛線 <b>向右滑動</b> 撕開卡包！</p>
-      <div class="tear-buttons"><button class="btn" data-tear="open">直接打開</button>${total - idx > 1 ? '<button class="btn" data-tear="skip">略過全部</button>' : ''}</div>`;
-    document.body.appendChild(stage);
-    const tpack = stage.querySelector('.tpack');
-    const top = stage.querySelector('.tpack-top');
-    const prog = stage.querySelector('.tear-progress');
-    const spark = stage.querySelector('.tear-spark');
+      </div>`;
+    foot.innerHTML = '<p class="po-hint">沿著卡包上方的虛線 <b>向右滑動</b> 撕開卡包</p>';
+    const tpack = main.querySelector('.tpack');
+    const top = tpack.querySelector('.tpack-top');
+    const body = tpack.querySelector('.tpack-body');
+    const prog = tpack.querySelector('.tear-progress');
+    const spark = tpack.querySelector('.tear-spark');
+    tpack.animate([{ transform: 'translateY(60vh) scale(.6) rotate(-10deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 600, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
     let startX = null, p = 0, done = false;
     const set = v => {
       p = Math.max(0, Math.min(1, v));
@@ -264,83 +291,178 @@ function tearPack(pack, idx, total, best) {
       top.style.transform = `rotate(${-p * 9}deg) translateY(${-p * 10}px)`;
       tpack.classList.toggle('tearing', p > 0);
     };
-    const finish = async skipAll => {
+    let ended = false;
+    const end = () => { if (ended) return; ended = true; ctx.onSkip = null; resolve(); };
+    ctx.onSkip = () => { done = true; end(); };
+    const finish = async () => {
       if (done) return;
       done = true;
       set(1);
+      tpack.classList.remove('po-float');
       stage.classList.add('torn');
-      if (navigator.vibrate) try { navigator.vibrate(30); } catch { /* ignore */ }
-      const anims = [
-        top.animate([{ transform: top.style.transform }, { transform: 'translate(90px, -220px) rotate(-38deg)', opacity: 0 }], { duration: 650, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }),
-        stage.querySelector('.tpack-body').animate([{ transform: 'none' }, { transform: 'translateY(-6px) scale(1.02)', offset: .25 }, { transform: 'translateY(90px) scale(.96)', opacity: 0 }], { duration: 750, delay: 250, easing: 'ease-in', fill: 'forwards' }),
-      ];
-      await Promise.all(anims.map(a => a.finished.catch(() => {})));
-      stage.classList.add('closing');
-      setTimeout(() => stage.remove(), 200);
-      resolve(skipAll);
+      buzz(30);
+      await Promise.all([
+        top.animate([{ transform: top.style.transform }, { transform: 'translate(120px, -260px) rotate(-40deg)', opacity: 0 }], { duration: 700, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }).finished,
+        body.animate([{ transform: 'none' }, { transform: 'translateY(-8px) scale(1.03)', offset: .3 }, { transform: 'translateY(8px)' }], { duration: 500, delay: 150, easing: 'ease-out', fill: 'forwards' }).finished,
+      ].map(x => x.catch(() => {})));
+      stage.classList.remove('torn');
+      end();
     };
+    tpack.classList.add('po-float');
     tpack.addEventListener('pointerdown', e => {
       if (done) return;
       startX = e.clientX;
       tpack.setPointerCapture?.(e.pointerId);
-      stage.querySelector('.tear-hand').style.display = 'none';
+      tpack.querySelector('.tear-hand').style.display = 'none';
     });
     tpack.addEventListener('pointermove', e => {
       if (startX === null || done) return;
       set((e.clientX - startX) / (tpack.clientWidth * 0.7));
-      if (p >= 1) finish(false);
+      if (p >= 1) finish();
     });
     const release = () => {
       if (startX === null || done) return;
       startX = null;
-      if (p >= 0.85) { finish(false); return; }
-      // 沒撕完：彈回去
-      const from = p;
-      const t0 = performance.now();
+      if (p >= 0.85) { finish(); return; }
+      const from = p, t0 = performance.now();
       const back = now => { const k = Math.min(1, (now - t0) / 220); set(from * (1 - k)); if (k < 1 && !done) requestAnimationFrame(back); };
       requestAnimationFrame(back);
-      if (from < 0.08) tpack.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-2deg)' }, { transform: 'rotate(2deg)' }, { transform: 'rotate(0)' }], { duration: 300 });
+      if (from < 0.08) tpack.animate([{ rotate: '0deg' }, { rotate: '-3deg' }, { rotate: '3deg' }, { rotate: '0deg' }], { duration: 300 });
     };
     tpack.addEventListener('pointerup', release);
     tpack.addEventListener('pointercancel', release);
-    stage.querySelector('[data-tear="open"]').onclick = () => finish(false);
-    const sk = stage.querySelector('[data-tear="skip"]');
-    if (sk) sk.onclick = () => finish(true);
   });
 }
 
-// 翻開卡片
-function revealCards(cards, isNew, pack, doneLabel) {
+// 第二階段：卡片從包裡升起成一疊，由普通到稀有排列；稀有卡先背面朝上，點一下翻開
+function poStack(ctx, chunk) {
   return new Promise(resolve => {
-    const flipped = new Set();
-    const html = `<h3>${esc(pack.name)}・開包結果</h3>
-      <p class="sub">點擊卡片翻開（翻開後再點一次可放大）</p>
-      <div class="open-grid">${cards.map((c, i) => `<div class="flip deal rar-${c.rarity} ${(RARITY_RANK[c.rarity] || 0) >= 5 ? 'special' : ''}" data-flip="${i}" style="animation-delay:${i * 90}ms">
-        <div class="flip-back"><span class="ball"></span></div>
-        <div class="flip-front">${cardHTML(c, { small: true })}${isNew[i] ? '<span class="new">NEW</span>' : ''}<span class="rar-tag">${RARITY_LABEL[c.rarity]}${c.variant ? '・特別版' : ''}</span></div></div>`).join('')}</div>`;
-    const flip = (i, el) => {
-      if (flipped.has(i)) return;
-      flipped.add(i);
-      el.classList.add('on');
-      const r = RARITY_RANK[cards[i].rarity] || 0;
-      if (r >= 4) toast(`✨ ${cards[i].name}（${RARITY_LABEL[cards[i].rarity]}${cards[i].variant ? '・特別版' : ''}）`, r >= 5 ? 'good rainbow' : 'good');
+    const { stage, main, foot } = ctx;
+    const order = chunk.map((x, i) => ({ ...x, i })).sort((a, b) => rankOf(a.c) - rankOf(b.c) || a.i - b.i);
+    const packEl = main.querySelector('.tpack');
+    const deck = document.createElement('div');
+    deck.className = 'po-deck';
+    // 最後一張（最稀有）放在最底下，所以反向插入
+    deck.innerHTML = order.map((x, k) => {
+      const r = rankOf(x.c);
+      const hidden = r >= 4;
+      return `<div class="po-card ${hidden ? 'hidden' : 'shown'} ${r >= 5 ? 'special' : r >= 3 ? 'gold' : ''}" data-k="${k}" style="z-index:${order.length - k}">
+        <div class="po-flip">
+          <div class="po-back"><span class="ball"></span></div>
+          <div class="po-front">${cardHTML(x.c)}${x.isNew ? '<span class="new">NEW</span>' : ''}<span class="rar-tag">${RARITY_LABEL[x.c.rarity]}${x.c.variant ? '・特別版' : ''}</span></div>
+        </div></div>`;
+    }).join('');
+    main.appendChild(deck);
+    foot.innerHTML = `<p class="po-hint">左右滑動卡片（或點一下）看下一張</p><div class="po-dots">${order.map(() => '<i></i>').join('')}</div>`;
+    const els = [...deck.querySelectorAll('.po-card')];
+    const dots = [...foot.querySelectorAll('.po-dots i')];
+    let idx = 0, busy = true, done = false;
+    const end = () => { if (done) return; done = true; ctx.onSkip = null; deck.remove(); resolve(); };
+    ctx.onSkip = end;
+
+    // 卡疊從包裡升起，包往下沉
+    (async () => {
+      els.forEach((el, k) => el.style.transform = `translateY(${Math.min(k, 3) * 4}px)`);
+      if (packEl) packEl.querySelector('.tpack-body').animate([{ transform: 'translateY(8px)' }, { transform: 'translateY(75vh)', opacity: 0 }], { duration: 700, delay: 350, easing: 'ease-in', fill: 'forwards' });
+      await deck.animate([{ transform: 'translateY(22%) scale(.78)', clipPath: 'inset(-50% -50% 72% -50%)' }, { transform: 'translateY(-6%) scale(1.02)', clipPath: 'inset(-50% -50% -50% -50%)', offset: .7 }, { transform: 'none', clipPath: 'inset(-50% -50% -50% -50%)' }], { duration: 850, delay: 150, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' }).finished.catch(() => {});
+      packEl?.remove();
+      busy = false;
+      prep();
+    })();
+
+    const prep = () => {
+      dots.forEach((d, k) => d.classList.toggle('on', k === idx));
+      const el = els[idx];
+      if (!el) return;
+      el.classList.add('top');
+      // 下一張是稀有卡時，整疊跟著發光預告
+      stage.classList.toggle('rare-glow', el.classList.contains('special') && el.classList.contains('hidden'));
+      stage.classList.toggle('gold-glow', el.classList.contains('gold') && el.classList.contains('hidden'));
+      if (el.classList.contains('hidden')) foot.querySelector('.po-hint').textContent = '✨ 稀有卡！點一下翻開';
+      else foot.querySelector('.po-hint').textContent = '左右滑動卡片（或點一下）看下一張';
     };
-    showModal(html, {
-      wide: true, dismissable: false,
-      buttons: [{ label: '全部翻開', value: 'all' }, { label: doneLabel, primary: true, value: 'done' }],
-      onButton: v => {
-        if (v === 'all') { document.querySelectorAll('.open-grid .flip').forEach((el, i) => setTimeout(() => flip(i, el), i * 80)); return false; }
-        resolve();
-        return true;
-      },
-      onClick: (e) => {
-        const f = e.target.closest('[data-flip]');
-        if (!f) return;
-        const i = +f.dataset.flip;
-        if (flipped.has(i)) { showModal(`<div class="zoom">${cardHTML(cards[i])}</div>`, { buttons: [{ label: '關閉', value: null }] }); return; }
-        flip(i, f);
-      },
+
+    const reveal = async el => {
+      busy = true;
+      const special = el.classList.contains('special');
+      buzz(special ? [30, 40, 60] : 25);
+      el.classList.add('charging');
+      await sleep(special ? 700 : 350);
+      el.classList.remove('charging', 'hidden');
+      el.classList.add('shown', 'burst');
+      stage.classList.add('flash');
+      setTimeout(() => stage.classList.remove('flash'), 400);
+      await sleep(600);
+      el.classList.remove('burst');
+      stage.classList.remove('rare-glow', 'gold-glow');
+      foot.querySelector('.po-hint').textContent = '左右滑動卡片（或點一下）看下一張';
+      busy = false;
+    };
+
+    const fly = async (el, dir) => {
+      busy = true;
+      el.classList.remove('top');
+      const cur = el.style.transform || 'none';
+      const a = el.animate([{ transform: cur }, { transform: `translate(${dir * 130}vw, -8vh) rotate(${dir * 28}deg)` }], { duration: 380, easing: 'cubic-bezier(.4,.1,.7,.6)', fill: 'forwards' });
+      idx++;
+      els.slice(idx).forEach((e2, k) => e2.animate([{ transform: e2.style.transform }, { transform: `translateY(${Math.min(k, 3) * 4}px)` }], { duration: 250, fill: 'forwards' }));
+      await a.finished.catch(() => {});
+      el.remove();
+      if (idx >= els.length) { end(); return; }
+      busy = false;
+      prep();
+    };
+
+    // 拖曳：卡片跟著手指移動並傾斜，超過門檻就飛走，否則彈回
+    let sx = null, sy = 0, dx = 0, moved = false;
+    deck.addEventListener('pointerdown', e => {
+      const el = els[idx];
+      if (busy || !el || !el.contains(e.target)) return;
+      sx = e.clientX; sy = e.clientY; dx = 0; moved = false;
+      deck.setPointerCapture?.(e.pointerId);
     });
+    deck.addEventListener('pointermove', e => {
+      const el = els[idx];
+      if (sx === null || busy || !el) return;
+      dx = e.clientX - sx;
+      const dy = (e.clientY - sy) * 0.3;
+      if (Math.abs(dx) > 6) moved = true;
+      if (el.classList.contains('hidden')) { el.style.transform = `translate(${dx * 0.15}px, ${dy * 0.3}px) rotate(${dx * 0.02}deg)`; return; }
+      el.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.06}deg)`;
+    });
+    const up = () => {
+      const el = els[idx];
+      if (sx === null || !el) return;
+      sx = null;
+      if (busy) return;
+      if (el.classList.contains('hidden')) { el.style.transform = ''; reveal(el); return; }
+      if (!moved) { fly(el, -1); return; }
+      if (Math.abs(dx) > Math.min(110, deck.clientWidth * 0.35)) { fly(el, Math.sign(dx)); return; }
+      el.animate([{ transform: el.style.transform }, { transform: 'none' }], { duration: 220, easing: 'cubic-bezier(.2,.9,.3,1.3)' });
+      el.style.transform = '';
+    };
+    deck.addEventListener('pointerup', up);
+    deck.addEventListener('pointercancel', () => { sx = null; const el = els[idx]; if (el) el.style.transform = ''; });
+  });
+}
+
+// 第三階段：本包總覽（稀有卡有提示），點卡可放大
+function poSummary(ctx, list, doneLabel) {
+  return new Promise(resolve => {
+    const { stage, main, foot } = ctx;
+    stage.classList.remove('rare-glow', 'gold-glow');
+    stage.classList.add('po-summary-mode');
+    ctx.onSkip = null;
+    main.innerHTML = `<div class="po-grid ${list.length > 5 ? 'many' : ''}">${list.map((x, i) => `<div class="po-cell ${rankOf(x.c) >= 5 ? 'special' : rankOf(x.c) >= 3 ? 'gold' : ''}" data-zi="${i}" style="animation-delay:${Math.min(i, 14) * 70}ms">
+      ${cardHTML(x.c, { small: true })}${x.isNew ? '<span class="new">NEW</span>' : ''}<span class="rar-tag">${RARITY_LABEL[x.c.rarity]}${x.c.variant ? '・特別版' : ''}</span></div>`).join('')}</div>`;
+    const newN = list.filter(x => x.isNew).length;
+    foot.innerHTML = `<p class="po-hint">${newN ? `獲得 <b>${newN}</b> 張新卡！` : '開包結果'}　點卡片可以放大</p><div class="po-buttons"><button class="btn primary" data-po="next">${esc(doneLabel)}</button></div>`;
+    main.querySelectorAll('[data-zi]').forEach(el => el.onclick = () => showModal(`<div class="zoom">${cardHTML(list[+el.dataset.zi].c)}</div>`, { buttons: [{ label: '關閉', value: null }] }));
+    foot.querySelector('[data-po="next"]').onclick = () => {
+      stage.classList.remove('po-summary-mode');
+      main.innerHTML = '';
+      resolve();
+    };
   });
 }
 
