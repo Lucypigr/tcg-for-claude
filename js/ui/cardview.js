@@ -28,7 +28,7 @@ export function imgTag(c) {
   if (!remote) return '';
   const local = `img/cards/${c.id}.webp`;
   const src = loaded.has(remote) && !loaded.has(local) ? remote : local;
-  return `<img class="card-img${loaded.has(src) ? ' ok' : ''}" alt="" src="${src}" data-alt="${src === local ? remote : ''}" onload="__cardImgLoaded(this)" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
+  return `<img class="card-img${loaded.has(src) ? ' ok' : ''}" alt="" loading="lazy" decoding="async" src="${src}" data-alt="${src === local ? remote : ''}" onload="__cardImgLoaded(this)" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
 }
 
 const RARITY_MARK = { C: '●', U: '◆', R: '★', RR: '★★', SR: '★★★', ACE: 'ACE', AR: 'AR', SAR: 'SAR', UR: 'UR' };

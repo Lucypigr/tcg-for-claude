@@ -697,3 +697,46 @@ nav::-webkit-scrollbar { display: none; }
 .save-btns { display: flex; flex-wrap: wrap; gap: 6px; }
 .slot-input { width: 100%; box-sizing: border-box; margin-top: 8px; }
 @media (max-width: 640px) { .slot-name { display: none; } }
+
+/* ===== 圖鑑 ===== */
+.progress.thin { height: 5px; margin: 4px 0 12px; }
+.dex-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin: 10px 0; }
+.dex-tab { flex-shrink: 0; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; font: inherit; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.dex-tab small { font-size: 11px; color: var(--muted); font-weight: 500; }
+.dex-tab.on { background: var(--accent); color: #111; border-color: var(--accent); }
+.dex-tab.on small { color: #333; }
+.dex-show { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; color: var(--muted); font-size: 14px; }
+.tf-show { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 4px 12px; font: inherit; cursor: pointer; }
+.tf-show.on { background: #3d7dca; border-color: #3d7dca; }
+.dex-show label { margin-left: auto; }
+.dex-sec h3 { margin: 18px 0 2px; }
+.dex-sec h3 small { color: var(--muted); font-size: 14px; font-weight: 500; }
+.dex-item { position: relative; cursor: pointer; transition: transform .12s; }
+.dex-item:hover { transform: translateY(-3px); }
+.card.dex-locked { filter: grayscale(1) brightness(.32) contrast(.9); box-shadow: none; }
+.card.dex-locked .holo-shine, .card.dex-locked .holo-glare { display: none; }
+.dex-item.got .card { box-shadow: 0 0 12px rgba(255, 216, 58, .35), 0 6px 18px rgba(0, 0, 0, .45); }
+.dex-lock { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: rgba(255, 255, 255, .8); text-shadow: 0 2px 6px #000; }
+.dex-lock span { font-size: 44px; font-weight: 900; }
+.dex-lock small { font-size: 12px; opacity: .8; }
+.dex-detail { display: flex; gap: 18px; align-items: flex-start; }
+.dex-detail .zoom { flex-shrink: 0; }
+.dex-info { flex: 1; min-width: 0; }
+.dex-info h4 { margin: 14px 0 6px; }
+.dex-own { font-weight: 900; font-size: 18px; color: var(--muted); }
+.dex-own.got { color: #7fe39a; }
+.get-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: 6px 0; background: rgba(255, 255, 255, .05); border-left: 4px solid var(--pc, var(--accent)); border-radius: 8px; flex-wrap: wrap; }
+.get-pack { flex: 1; font-weight: 700; min-width: 120px; }
+.get-rate { color: var(--accent); font-weight: 700; font-size: 14px; }
+.get-price { color: var(--muted); font-size: 13px; }
+.tiny-note { font-size: 12px; margin-top: 10px; }
+.pack.focus { animation: pack-focus 1.2s ease-in-out 3; border-color: var(--accent); }
+@keyframes pack-focus { 50% { box-shadow: 0 0 0 3px var(--accent), 0 0 30px rgba(255, 216, 58, .5); } }
+@media (max-width: 640px) {
+  .dex-detail { flex-direction: column; align-items: center; }
+  .dex-detail .zoom .card { --w: 200px; }
+  .dex-show label { margin-left: 0; }
+}
+/* 圖鑑卡片很多：畫面外的卡片略過排版與繪製 */
+.dex-item { content-visibility: auto; contain-intrinsic-size: 150px 210px; }
+.dex-sec .card-grid { contain: layout; }

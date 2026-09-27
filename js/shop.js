@@ -133,3 +133,44 @@ export const RARITY_LABEL = { C: 'C', U: 'U', R: 'R', RR: 'RR', SR: 'SR', ACE: '
 export const RARITY_RANK = { C: 0, U: 1, R: 2, ACE: 3, RR: 4, AR: 5, SR: 6, SAR: 7, UR: 8 };
 // 閃卡：RR 以上與 ACE SPEC
 export const isHolo = c => (RARITY_RANK[c.rarity] || 0) >= 3;
+
+// 圖鑑用：每包開出指定卡片的機率（依各欄位稀有度機率與降級規則估算）
+const chanceCache = new Map();
+function rarityCounts(pool) {
+  const n = {};
+  for (const c of pool) n[c.rarity] = (n[c.rarity] || 0) + 1;
+  return n;
+}
+function resolveRarity(counts, k) {
+  let i = ORDER.indexOf(k);
+  while (i > 0 && !counts[ORDER[i]]) i--;
+  return ORDER[i];
+}
+export function dropChance(pack, c) {
+  const key = `${pack.id}:${c.id}`;
+  if (chanceCache.has(key)) return chanceCache.get(key);
+  let chance = 0;
+  if (c.variant) {
+    if (pack.variants?.includes(c)) {
+      const counts = rarityCounts(pack.variants);
+      const w = Object.fromEntries(Object.entries(VARIANT_WEIGHT).filter(([k]) => counts[k]));
+      const sum = Object.values(w).reduce((a, b) => a + b, 0);
+      chance = pack.variantRate * (w[c.rarity] || 0) / sum / counts[c.rarity];
+    }
+  } else if (pack.pool.includes(c)) {
+    const counts = rarityCounts(pack.pool);
+    let miss = 1;
+    for (const slot of pack.slots) {
+      let p = 0;
+      for (const [k, v] of Object.entries(slot)) if (resolveRarity(counts, k) === c.rarity) p += v;
+      miss *= 1 - p / counts[c.rarity];
+    }
+    chance = 1 - miss;
+  }
+  chanceCache.set(key, chance);
+  return chance;
+}
+// 可以開出這張卡的卡包（機率高的在前）
+export function packsFor(c) {
+  return PACKS.map(p => ({ pack: p, chance: dropChance(p, c) })).filter(x => x.chance > 0).sort((a, b) => b.chance - a.chance);
+}

@@ -1,9 +1,9 @@
 // 主程式：畫面切換、商店、收藏、牌組編輯
 import { CARDS } from './data/cards.js';
-import { AI_DECKS } from './data/decks.js';
+import { AI_DECKS, STARTER_DECKS } from './data/decks.js';
 import { CARD_MAP, validateDeck, isBasicEnergy, isPokemon, TYPE_NAMES, ruleName } from './engine/cards.js';
 import * as store from './store.js';
-import { PACKS, openPack, RARITY_LABEL, RARITY_RANK } from './shop.js';
+import { PACKS, openPack, RARITY_LABEL, RARITY_RANK, packsFor } from './shop.js';
 import { cardHTML, miniCardHTML, esc, energyIcon, getShowImages, setShowImages } from './ui/cardview.js';
 import { showModal, toast } from './ui/modal.js';
 import { BattleView } from './ui/battle.js';
@@ -21,7 +21,7 @@ const LEVELS = [
 
 function header(active = '') {
   const s = store.load();
-  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '收藏'], ['tutorial', '教學'], ['saves', '存檔'], ['rules', '規則']];
+  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '圖鑑'], ['tutorial', '教學'], ['saves', '存檔'], ['rules', '規則']];
   return `<header class="top">
     <div class="logo" data-go="home"><span class="ball"></span>寶可夢卡牌 <b>AI對戰</b></div>
     <nav>${nav.map(([id, n]) => `<button class="nav ${active === id ? 'on' : ''}" data-go="${id}">${n}</button>`).join('')}</nav>
@@ -261,7 +261,7 @@ async function battle(deck, level) {
 }
 
 // ================= 商店 =================
-function shop() {
+function shop(focus) {
   const s = store.load();
   const ex = store.extras();
   const exCoins = ex.reduce((a, e) => a + e.n * e.price, 0);
@@ -279,6 +279,9 @@ function shop() {
       <p>目前可出售：<b>${ex.reduce((a, e) => a + e.n, 0)}</b> 張，共 🪙 <b>${exCoins}</b></p>
       <button class="btn" id="sell" ${ex.length ? '' : 'disabled'}>全部出售</button></div>`, 'shop');
   app.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => buy(b.dataset.buy, 1));
+  // 從圖鑑前往：捲動到指定卡包並閃爍提示
+  const target = focus && app.querySelector(`[data-buy="${focus}"]`)?.closest('.pack');
+  if (target) { target.classList.add('focus'); setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); }
   app.querySelectorAll('[data-buy5]').forEach(b => b.onclick = () => buy(b.dataset.buy5, 5));
   app.querySelector('#sell').onclick = async () => {
     const ok = await showModal(`<p>確定要出售 ${ex.reduce((a, e) => a + e.n, 0)} 張重複卡片，換取 🪙${exCoins} 嗎？</p>`, { buttons: [{ label: '取消', value: false }, { label: '出售', primary: true, value: true }] });
@@ -585,35 +588,93 @@ function bindFilter(state, rerender) {
   if (o) o.onchange = () => { state.owned = o.checked; rerender(); };
 }
 
+// ================= 圖鑑 =================
+// 依擴充包分區：擁有的卡會亮起，沒有的卡變暗，點擊可查看在哪個卡包取得
+const DEX_SETS = [
+  { id: 'starter', name: '基礎系列', desc: 'ex初階牌組・皮卡丘ex起始組合・SVQP', match: c => ['SVD', 'SVC', 'SVQP'].includes(c.set) },
+  { id: 'meta', name: '環境強化卡', desc: '各擴充包的環境主流卡', match: c => !['SVD', 'SVC', 'SVQP', 'SV8', 'SV8a', 'M3'].includes(c.set) },
+  { id: 'SV8', name: '超電突圍', desc: 'SV8', match: c => c.set === 'SV8' },
+  { id: 'SV8a', name: '太晶慶典', desc: 'SV8a', match: c => c.set === 'SV8a' },
+  { id: 'M3', name: '虛無歸零', desc: 'M3', match: c => c.set === 'M3' },
+];
+const dexCards = CARDS.filter(c => !isBasicEnergy(c));
+const dexNum = c => { const n = c.id.split('-')[1]; return /^\d+$/.test(n) ? +n : 999; };
+const DEX_SORTED = [...dexCards].sort((a, b) => a.set.localeCompare(b.set) || dexNum(a) - dexNum(b));
 function collection() {
-  const state = { q: '', cat: '', type: '', owned: false, ownedToggle: true };
-  const list = CARDS;
+  const state = { q: '', cat: '', type: '', owned: false, ownedToggle: false, tab: 'all', show: 'all' };
   const render = (keepFocus = false) => {
     const s = store.load();
-    const total = list.filter(c => !isBasicEnergy(c)).length;
-    const have = list.filter(c => !isBasicEnergy(c) && s.collection[c.id]).length;
-    const shown = applyFilter(list, state);
-    const grid = shown.map(c => {
-      const n = isBasicEnergy(c) ? null : (s.collection[c.id] || 0);
-      return `<div class="coll-item" data-zoom="${c.id}">${cardHTML(c, { small: true, dim: n === 0, count: n === null ? '∞' : n })}</div>`;
-    }).join('');
-    if (keepFocus && app.querySelector('#coll-grid')) {
-      app.querySelector('#coll-grid').innerHTML = grid;
-      return;
-    }
-    mount(`<h2>收藏 <small>${have} / ${total}（${Math.round(have / total * 100)}%）</small></h2>
-      <div class="progress"><div style="width:${have / total * 100}%"></div></div>
-      <div class="opt-row"><label><input type="checkbox" id="imgs" ${getShowImages() ? 'checked' : ''}> 嘗試載入官方卡圖（需網路，載入失敗會自動改用文字卡面）</label></div>
-      ${filterBar(state)}<div class="card-grid" id="coll-grid">${grid}</div>`, 'collection');
+    const have = c => (s.collection[c.id] || 0) > 0;
+    const tabs = [{ id: 'all', name: '全部' }, ...DEX_SETS, { id: 'variant', name: '特別插畫版', match: c => !!c.variant }];
+    const inTab = (t, c) => t.id === 'all' || (t.id === 'variant' ? !!c.variant : !c.variant && t.match(c));
+    const prog = t => { const l = dexCards.filter(c => inTab(t, c)); return [l.filter(have).length, l.length]; };
+    const [hv, tot] = prog(tabs[0]);
+    const tile = c => {
+      const n = s.collection[c.id] || 0;
+      return `<div class="dex-item ${n ? 'got' : 'locked'}" data-zoom="${c.id}">${cardHTML(c, { small: true, count: n || null, extraClass: n ? '' : 'dex-locked' })}
+        ${n ? '' : `<div class="dex-lock"><span>？</span><small>${esc(c.set)} ${esc(c.id.split('-')[1])}</small></div>`}</div>`;
+    };
+    const filtered = applyFilter(DEX_SORTED, state).filter(c => state.show === 'all' || (state.show === 'got') === have(c));
+    const sections = (state.tab === 'all' ? tabs.slice(1) : tabs.filter(t => t.id === state.tab)).map(t => {
+      const list = filtered.filter(c => inTab(t, c));
+      if (!list.length) return '';
+      const [a, b] = prog(t);
+      return `<section class="dex-sec"><h3>${esc(t.name)} <small>${a} / ${b}</small></h3>
+        <div class="progress thin"><div style="width:${a / b * 100}%"></div></div>
+        <div class="card-grid">${list.map(tile).join('')}</div></section>`;
+    }).join('') || '<p class="sub">沒有符合條件的卡片</p>';
+    if (keepFocus && app.querySelector('#dex-body')) { app.querySelector('#dex-body').innerHTML = sections; return; }
+    mount(`<h2>圖鑑 <small>${hv} / ${tot}（${Math.round(hv / tot * 100)}%）</small></h2>
+      <div class="progress"><div style="width:${hv / tot * 100}%"></div></div>
+      <p class="sub">已擁有的卡片會亮起來；還沒有的卡片點一下，可以查看在哪個卡包能開到。</p>
+      <div class="dex-tabs">${tabs.map(t => { const [a, b] = prog(t); return `<button class="dex-tab ${state.tab === t.id ? 'on' : ''}" data-tab="${t.id}">${esc(t.name)}<small>${a}/${b}</small></button>`; }).join('')}</div>
+      ${filterBar(state)}
+      <div class="dex-show">${[['all', '全部'], ['got', '已擁有'], ['missing', '未擁有']].map(([k, n]) => `<button class="tf-show ${state.show === k ? 'on' : ''}" data-show="${k}">${n}</button>`).join('')}
+        <label><input type="checkbox" id="imgs" ${getShowImages() ? 'checked' : ''}> 顯示官方卡圖</label></div>
+      <div id="dex-body">${sections}</div>`, 'collection');
     bindFilter(state, render);
+    app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { state.tab = b.dataset.tab; render(); });
+    app.querySelectorAll('[data-show]').forEach(b => b.onclick = () => { state.show = b.dataset.show; render(); });
     app.querySelector('#imgs').onchange = e => { setShowImages(e.target.checked); render(); };
   };
   render();
 }
+// 卡片詳細：持有張數與取得方式
 document.addEventListener('click', e => {
   const z = e.target.closest('[data-zoom]');
   if (!z) return;
-  showModal(`<div class="zoom">${cardHTML(z.dataset.zoom)}</div><p class="sub center">持有：${isBasicEnergy(CARD_MAP.get(z.dataset.zoom)) ? '無限' : store.owned(z.dataset.zoom)}張</p>`, { buttons: [{ label: '關閉', value: null }] });
+  const c = CARD_MAP.get(z.dataset.zoom);
+  if (isBasicEnergy(c)) { showModal(`<div class="zoom">${cardHTML(c)}</div><p class="sub center">基本能量：無限供應</p>`, { buttons: [{ label: '關閉', value: null }] }); return; }
+  const n = store.owned(c.id);
+  const packs = packsFor(c);
+  // 對戰中、編輯牌組中或在其他對話框裡時，不顯示前往商店的按鈕
+  const canGo = !document.querySelector('.modal-wrap') && !app.querySelector('.battle, .editor');
+  const starters = STARTER_DECKS.filter(d => d.cards[c.id]);
+  const pct = x => (x >= 0.1 ? `${(x * 100).toFixed(0)}%` : x >= 0.01 ? `${(x * 100).toFixed(1)}%` : `${(x * 100).toFixed(2)}%`);
+  const base = c.variant ? CARD_MAP.get(c.variant) : null;
+  const html = `<div class="dex-detail"><div class="zoom">${cardHTML(c)}</div>
+    <div class="dex-info">
+      <div class="dex-own ${n ? 'got' : ''}">${n ? `✅ 已擁有 ${n} 張` : '🔒 尚未擁有'}</div>
+      <p class="sub">${esc(c.set)} ${esc(c.id.split('-')[1])}・稀有度 ${RARITY_LABEL[c.rarity] || c.rarity}${c.variant ? '・特別插畫版' : ''}</p>
+      ${base ? `<p class="sub">效果與一般版「${esc(base.name)}」（${esc(base.id)}）相同，組牌時合計最多 4 張。</p>` : ''}
+      <h4>取得方式</h4>
+      ${starters.length ? `<div class="get-row"><span>🎁 起始牌組「${starters.map(d => esc(d.name)).join('」「')}」內含</span></div>` : ''}
+      ${packs.map(({ pack, chance }) => `<div class="get-row" style="--pc:${pack.color}">
+        <span class="get-pack">${esc(pack.name)}</span>
+        <span class="get-rate">每包約 ${pct(chance)}</span>
+        ${canGo ? `<button class="btn tiny primary" data-goshop="${pack.id}">🪙 ${pack.price} 去購買</button>` : `<span class="get-price">🪙 ${pack.price}</span>`}</div>`).join('') || '<p class="sub">目前無法從卡包取得</p>'}
+      <p class="sub tiny-note">機率為依卡包各欄位稀有度估算的數值。</p>
+    </div></div>`;
+  showModal(html, {
+    wide: true,
+    buttons: [{ label: '關閉', value: null }],
+    onClick: (ev, body, close) => {
+      const b = ev.target.closest('[data-goshop]');
+      if (!b) return;
+      close();
+      route('shop', b.dataset.goshop);
+    },
+  });
 });
 
 // ================= 牌組 =================
