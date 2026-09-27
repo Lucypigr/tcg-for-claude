@@ -140,7 +140,7 @@ export function missingCards(deck) {
 }
 
 // 出售：同一張卡超過4張的部分
-export const SELL_PRICE = { C: 5, U: 10, R: 30, RR: 80, SR: 150, ACE: 120 };
+export const SELL_PRICE = { C: 5, U: 10, R: 30, RR: 80, SR: 150, ACE: 120, AR: 100, SAR: 300, UR: 400 };
 export function extras() {
   const s = load();
   const out = [];

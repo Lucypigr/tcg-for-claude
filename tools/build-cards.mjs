@@ -194,8 +194,19 @@ const sig = c => JSON.stringify([c.name, c.cat, c.stage, c.hp, c.type, c.from, c
 const bySig = new Map();
 const final = [];
 const aliases = {}; // 被合併的重複卡 → 保留的卡片ID
+// 擴充包中編號超過一般卡的高稀有度版本（插畫/全圖/金卡）：效果與一般版相同，保留為收藏用的「特別版」
+const SECRET_FROM = { SV8: 107, SV8a: 188 };
+function variantRarity(c) {
+  const n = +c.id.split('-')[1];
+  if (c.set === 'SV8') return n <= 118 ? 'AR' : n <= 129 ? 'SR' : n <= 135 ? 'SAR' : 'UR';
+  return n <= 226 ? 'SR' : n <= 235 ? 'SAR' : 'UR';
+}
 for (const c of cards) {
   const s = sig(c);
+  if (bySig.has(s) && SECRET_FROM[c.set] && +c.id.split('-')[1] >= SECRET_FROM[c.set]) {
+    final.push({ ...c, variant: bySig.get(s), rarity: variantRarity(c) });
+    continue;
+  }
   if (bySig.has(s)) { if (bySig.get(s) !== c.id) aliases[c.id] = bySig.get(s); continue; }
   bySig.set(s, c.id);
   final.push(c);
@@ -206,4 +217,12 @@ fs.writeFileSync(outFile,
   `// 由 tools/build-cards.mjs 產生，請勿手動修改\n// 資料來源: tcgdex/cards-database (data-asia, 繁體中文)\nexport const CARDS = ${JSON.stringify(final, null, 0).replace(/},{/g, '},\n{')};\n` +
   `// 與其他版本完全相同而合併的卡片ID\nexport const ALIASES = ${JSON.stringify(aliases)};\n`);
 fs.writeFileSync(path.join(here, 'official-ids.json'), JSON.stringify(officialIds));
+// 官方卡圖編號併入 js/data/images.js（補上尚未收錄的卡）
+{
+  const imgFile = path.resolve(here, '../js/data/images.js');
+  const src = fs.readFileSync(imgFile, 'utf8');
+  const ids = JSON.parse(src.match(/IMAGE_IDS = (\{.*\});/)[1]);
+  for (const c of final) if (!ids[c.id] && officialIds[c.id]) ids[c.id] = officialIds[c.id];
+  fs.writeFileSync(imgFile, src.replace(/IMAGE_IDS = \{.*\};/, `IMAGE_IDS = ${JSON.stringify(ids)};`));
+}
 console.log(`寫入 ${final.length} 張卡 → ${outFile}`);

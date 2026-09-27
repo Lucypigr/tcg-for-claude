@@ -31,7 +31,35 @@ export function imgTag(c) {
   return `<img class="card-img${loaded.has(src) ? ' ok' : ''}" alt="" src="${src}" data-alt="${src === local ? remote : ''}" onload="__cardImgLoaded(this)" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.remove()}">`;
 }
 
-const RARITY_MARK = { C: '●', U: '◆', R: '★', RR: '★★', SR: '★★★', ACE: 'ACE' };
+const RARITY_MARK = { C: '●', U: '◆', R: '★', RR: '★★', SR: '★★★', ACE: 'ACE', AR: 'AR', SAR: 'SAR', UR: 'UR' };
+// 閃卡：RR 以上、ACE SPEC 與特別版
+const HOLO = { ACE: 1, RR: 1, AR: 2, SR: 2, SAR: 3, UR: 3 };
+export const holoLevel = c => HOLO[c.rarity] || 0;
+
+// 滑鼠移到閃卡上時，反光與傾斜跟著滑鼠移動（手機則是自動流動的光澤）
+let holoCard = null;
+function holoReset() {
+  if (!holoCard) return;
+  holoCard.classList.remove('holo-hover');
+  holoCard.style.removeProperty('--mx'); holoCard.style.removeProperty('--my');
+  holoCard.style.removeProperty('--rx'); holoCard.style.removeProperty('--ry');
+  holoCard = null;
+}
+document.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  const card = e.target.closest?.('.card.holo');
+  if (card !== holoCard) holoReset();
+  if (!card) return;
+  holoCard = card;
+  const r = card.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  card.classList.add('holo-hover');
+  card.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+  card.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+  card.style.setProperty('--rx', `${((0.5 - y) * 14).toFixed(1)}deg`);
+  card.style.setProperty('--ry', `${((x - 0.5) * 14).toFixed(1)}deg`);
+}, { passive: true });
+document.addEventListener('pointerleave', holoReset);
 
 export function cardHTML(c, { small = false, count = null, dim = false, extraClass = '', uid = '' } = {}) {
   if (typeof c === 'string') c = cardData(c);
@@ -57,13 +85,15 @@ export function cardHTML(c, { small = false, count = null, dim = false, extraCla
   const rule = (c.tera ? '<div class="rulebox tera">太晶：只要這隻寶可夢在備戰區，就不會受到招式的傷害。</div>' : '') +
     (c.cat === 'P' && (c.ex || c.mega) ? `<div class="rulebox">${c.mega ? '超級進化寶可夢ex昏厥時，對手獲得3張獎賞卡。' : '寶可夢ex昏厥時，對手獲得2張獎賞卡。'}</div>` : '');
   const glyph = c.cat === 'P' ? TYPE_NAMES[c.type] : c.cat === 'E' ? TYPE_NAMES[c.provides || 'C'] : { Item: '物', Supporter: '支', Stadium: '場', Tool: '具' }[c.trainer];
-  return `<div class="card ${typeCls} rar-${c.rarity} ${small ? 'small' : ''} ${dim ? 'dim' : ''} ${c.ex ? 'is-ex' : ''} ${extraClass}" data-cid="${c.id}" ${uid ? `data-uid="${uid}"` : ''}>
+  const holo = holoLevel(c);
+  return `<div class="card ${typeCls} rar-${c.rarity} ${small ? 'small' : ''} ${dim ? 'dim' : ''} ${c.ex ? 'is-ex' : ''} ${holo ? `holo holo-${holo}` : ''} ${c.variant ? 'variant' : ''} ${extraClass}" data-cid="${c.id}" ${uid ? `data-uid="${uid}"` : ''}>
     ${head}
     <div class="card-art"><span class="art-glyph">${glyph}</span>${small ? '' : ''}</div>
     <div class="card-body">${body}</div>
     ${rule}${foot}
     <div class="card-meta"><span>${c.set} ${c.id.split('-')[1]}</span><span class="rar">${RARITY_MARK[c.rarity] || ''}</span></div>
     ${imgTag(c)}
+    ${holo ? '<div class="holo-shine"></div><div class="holo-glare"></div>' : ''}
     ${count !== null ? `<div class="count-badge">×${count}</div>` : ''}
   </div>`;
 }
@@ -81,6 +111,7 @@ export function miniCardHTML(c, { uid = '', playable = false, selected = false, 
     <div class="mini-name">${esc(c.name)}</div>
     <div class="mini-sub">${sub}</div>
     ${imgTag(c)}
+    ${holo ? '<div class="holo-shine"></div><div class="holo-glare"></div>' : ''}
     ${count !== null ? `<div class="count-badge">×${count}</div>` : ''}
   </div>`;
 }

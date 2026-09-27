@@ -3,11 +3,14 @@ import { CARDS } from './data/cards.js';
 import { AI_DECKS } from './data/decks.js';
 import { CARD_MAP, validateDeck, isBasicEnergy, isPokemon, TYPE_NAMES, ruleName } from './engine/cards.js';
 import * as store from './store.js';
-import { PACKS, openPack, RARITY_LABEL } from './shop.js';
+import { PACKS, openPack, RARITY_LABEL, RARITY_RANK } from './shop.js';
 import { cardHTML, miniCardHTML, esc, energyIcon, getShowImages, setShowImages } from './ui/cardview.js';
 import { showModal, toast } from './ui/modal.js';
 import { BattleView } from './ui/battle.js';
 import { showRulesSlides, TUTORIAL_BATTLE } from './ui/tutorial.js';
+
+// 商店卡包封面卡
+const PACK_COVER = { basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', sv8a: 'SV8a-136', ex: 'SV1S-028' };
 
 const app = document.getElementById('app');
 const LEVELS = [
@@ -178,14 +181,14 @@ function shop() {
   mount(`<h2>商店</h2>
     <p class="sub">用對戰贏得的金幣購買卡包。每包5張卡，稀有度：C ● / U ◆ / R ★ / RR ★★ / SR ★★★ / ACE SPEC</p>
     <div class="pack-row">${PACKS.map(p => `<div class="pack" style="--pc:${p.color}">
-      <div class="pack-art"><div class="pack-logo">${esc(p.name)}</div><div class="pack-cover">${cardHTML({ basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', sv8a: 'SV8a-136', ex: 'SV1S-028' }[p.id], { small: true })}</div></div>
+      <div class="pack-art"><div class="pack-logo">${esc(p.name)}</div><div class="pack-cover">${cardHTML(PACK_COVER[p.id], { small: true })}</div></div>
       <p>${esc(p.desc)}</p>
       <div class="pack-buy"><span>🪙 ${p.price}</span>
         <button class="btn primary" data-buy="${p.id}" ${s.coins < p.price ? 'disabled' : ''}>購買1包</button>
         <button class="btn" data-buy5="${p.id}" ${s.coins < p.price * 5 ? 'disabled' : ''}>購買5包</button></div>
     </div>`).join('')}</div>
     <div class="sell-box"><h3>出售重複卡片</h3>
-      <p>同一張卡超過4張的部分可以出售換取金幣（C 5 / U 10 / R 30 / RR 80 / SR 150 / ACE 120）。</p>
+      <p>同一張卡超過4張的部分可以出售換取金幣（C 5 / U 10 / R 30 / RR 80 / ACE 120 / AR 100 / SR 150 / SAR 300 / UR 400）。</p>
       <p>目前可出售：<b>${ex.reduce((a, e) => a + e.n, 0)}</b> 張，共 🪙 <b>${exCoins}</b></p>
       <button class="btn" id="sell" ${ex.length ? '' : 'disabled'}>全部出售</button></div>`, 'shop');
   app.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => buy(b.dataset.buy, 1));
@@ -214,33 +217,128 @@ async function buy(packId, n) {
   shop();
 }
 
-function packOpening(cards, before, pack) {
+// 開包：每包先滑動撕開，再翻開卡片
+async function packOpening(cards, before, pack) {
   const seen = { ...before };
   const isNew = cards.map(c => { const n = !seen[c.id]; seen[c.id] = (seen[c.id] || 0) + 1; return n; });
-  const order = ['C', 'U', 'R', 'ACE', 'RR', 'SR'];
+  const total = Math.ceil(cards.length / pack.size);
+  for (let p = 0; p < total; p++) {
+    const from = p * pack.size;
+    const chunk = cards.slice(from, from + pack.size);
+    const best = Math.max(...chunk.map(c => RARITY_RANK[c.rarity] || 0));
+    const skip = await tearPack(pack, p, total, best);
+    if (skip) {
+      await revealCards(cards.slice(from), isNew.slice(from), pack, '完成');
+      return;
+    }
+    await revealCards(chunk, isNew.slice(from, from + pack.size), pack, p < total - 1 ? `下一包（${p + 2}/${total}）` : '完成');
+  }
+}
+
+// 滑動撕開卡包（滑鼠拖曳或手指滑動），回傳 true 表示略過剩下的動畫
+function tearPack(pack, idx, total, best) {
+  return new Promise(resolve => {
+    const stage = document.createElement('div');
+    stage.className = `tear-stage ${best >= 5 ? 'rare-glow' : best >= 3 ? 'gold-glow' : ''}`;
+    stage.innerHTML = `
+      <div class="tear-count">${esc(pack.name)}${total > 1 ? `・第 ${idx + 1} / ${total} 包` : ''}</div>
+      <div class="tpack" style="--pc:${pack.color}">
+        <div class="tpack-top"><span>✂ ─ ─ ─ ─ ─ ─ ─ ─</span></div>
+        <div class="tpack-body"><div class="pack-logo">${esc(pack.name)}</div><div class="pack-cover">${cardHTML(PACK_COVER[pack.id], { small: true })}</div></div>
+        <div class="tear-line"><div class="tear-progress"></div><div class="tear-spark"></div></div>
+        <div class="tear-hand">👆</div>
+      </div>
+      <p class="tear-hint">沿著卡包上方的虛線 <b>向右滑動</b> 撕開卡包！</p>
+      <div class="tear-buttons"><button class="btn" data-tear="open">直接打開</button>${total - idx > 1 ? '<button class="btn" data-tear="skip">略過全部</button>' : ''}</div>`;
+    document.body.appendChild(stage);
+    const tpack = stage.querySelector('.tpack');
+    const top = stage.querySelector('.tpack-top');
+    const prog = stage.querySelector('.tear-progress');
+    const spark = stage.querySelector('.tear-spark');
+    let startX = null, p = 0, done = false;
+    const set = v => {
+      p = Math.max(0, Math.min(1, v));
+      prog.style.width = `${p * 100}%`;
+      spark.style.left = `${p * 100}%`;
+      spark.style.opacity = p > 0 && p < 1 ? 1 : 0;
+      top.style.transform = `rotate(${-p * 9}deg) translateY(${-p * 10}px)`;
+      tpack.classList.toggle('tearing', p > 0);
+    };
+    const finish = async skipAll => {
+      if (done) return;
+      done = true;
+      set(1);
+      stage.classList.add('torn');
+      if (navigator.vibrate) try { navigator.vibrate(30); } catch { /* ignore */ }
+      const anims = [
+        top.animate([{ transform: top.style.transform }, { transform: 'translate(90px, -220px) rotate(-38deg)', opacity: 0 }], { duration: 650, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }),
+        stage.querySelector('.tpack-body').animate([{ transform: 'none' }, { transform: 'translateY(-6px) scale(1.02)', offset: .25 }, { transform: 'translateY(90px) scale(.96)', opacity: 0 }], { duration: 750, delay: 250, easing: 'ease-in', fill: 'forwards' }),
+      ];
+      await Promise.all(anims.map(a => a.finished.catch(() => {})));
+      stage.classList.add('closing');
+      setTimeout(() => stage.remove(), 200);
+      resolve(skipAll);
+    };
+    tpack.addEventListener('pointerdown', e => {
+      if (done) return;
+      startX = e.clientX;
+      tpack.setPointerCapture?.(e.pointerId);
+      stage.querySelector('.tear-hand').style.display = 'none';
+    });
+    tpack.addEventListener('pointermove', e => {
+      if (startX === null || done) return;
+      set((e.clientX - startX) / (tpack.clientWidth * 0.7));
+      if (p >= 1) finish(false);
+    });
+    const release = () => {
+      if (startX === null || done) return;
+      startX = null;
+      if (p >= 0.85) { finish(false); return; }
+      // 沒撕完：彈回去
+      const from = p;
+      const t0 = performance.now();
+      const back = now => { const k = Math.min(1, (now - t0) / 220); set(from * (1 - k)); if (k < 1 && !done) requestAnimationFrame(back); };
+      requestAnimationFrame(back);
+      if (from < 0.08) tpack.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-2deg)' }, { transform: 'rotate(2deg)' }, { transform: 'rotate(0)' }], { duration: 300 });
+    };
+    tpack.addEventListener('pointerup', release);
+    tpack.addEventListener('pointercancel', release);
+    stage.querySelector('[data-tear="open"]').onclick = () => finish(false);
+    const sk = stage.querySelector('[data-tear="skip"]');
+    if (sk) sk.onclick = () => finish(true);
+  });
+}
+
+// 翻開卡片
+function revealCards(cards, isNew, pack, doneLabel) {
   return new Promise(resolve => {
     const flipped = new Set();
-    const html = () => `<h3>${esc(pack.name)}・開包結果</h3>
-      <p class="sub">點擊卡片翻開</p>
-      <div class="open-grid">${cards.map((c, i) => `<div class="flip ${flipped.has(i) ? 'on' : ''} rar-${c.rarity}" data-flip="${i}">
+    const html = `<h3>${esc(pack.name)}・開包結果</h3>
+      <p class="sub">點擊卡片翻開（翻開後再點一次可放大）</p>
+      <div class="open-grid">${cards.map((c, i) => `<div class="flip deal rar-${c.rarity} ${(RARITY_RANK[c.rarity] || 0) >= 5 ? 'special' : ''}" data-flip="${i}" style="animation-delay:${i * 90}ms">
         <div class="flip-back"><span class="ball"></span></div>
-        <div class="flip-front">${cardHTML(c, { small: true })}${isNew[i] ? '<span class="new">NEW</span>' : ''}<span class="rar-tag">${RARITY_LABEL[c.rarity]}</span></div></div>`).join('')}</div>`;
-    showModal(html(), {
+        <div class="flip-front">${cardHTML(c, { small: true })}${isNew[i] ? '<span class="new">NEW</span>' : ''}<span class="rar-tag">${RARITY_LABEL[c.rarity]}${c.variant ? '・特別版' : ''}</span></div></div>`).join('')}</div>`;
+    const flip = (i, el) => {
+      if (flipped.has(i)) return;
+      flipped.add(i);
+      el.classList.add('on');
+      const r = RARITY_RANK[cards[i].rarity] || 0;
+      if (r >= 4) toast(`✨ ${cards[i].name}（${RARITY_LABEL[cards[i].rarity]}${cards[i].variant ? '・特別版' : ''}）`, r >= 5 ? 'good rainbow' : 'good');
+    };
+    showModal(html, {
       wide: true, dismissable: false,
-      buttons: [{ label: '全部翻開', value: 'all' }, { label: '完成', primary: true, value: 'done' }],
+      buttons: [{ label: '全部翻開', value: 'all' }, { label: doneLabel, primary: true, value: 'done' }],
       onButton: v => {
-        if (v === 'all') { cards.forEach((_, i) => flipped.add(i)); document.querySelector('.modal-body').innerHTML = html(); return false; }
+        if (v === 'all') { document.querySelectorAll('.open-grid .flip').forEach((el, i) => setTimeout(() => flip(i, el), i * 80)); return false; }
         resolve();
         return true;
       },
-      onClick: (e, body) => {
+      onClick: (e) => {
         const f = e.target.closest('[data-flip]');
         if (!f) return;
         const i = +f.dataset.flip;
         if (flipped.has(i)) { showModal(`<div class="zoom">${cardHTML(cards[i])}</div>`, { buttons: [{ label: '關閉', value: null }] }); return; }
-        flipped.add(i);
-        f.classList.add('on');
-        if (order.indexOf(cards[i].rarity) >= 4) toast(`✨ ${cards[i].name}（${RARITY_LABEL[cards[i].rarity]}）`, 'good');
+        flip(i, f);
       },
     });
   });

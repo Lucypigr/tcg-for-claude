@@ -6,7 +6,7 @@ import { spend, addCards } from './store.js';
 const STARTER_SETS = new Set(['SVD', 'SVC', 'SVQP']);
 const STAPLES = ['SVD-117', 'SVD-118', 'SVD-119', 'SVD-120', 'SVD-122', 'SVD-129', 'SVD-130', 'SVD-135', 'SVD-138'];
 
-const notEnergy = c => !isBasicEnergy(c);
+const notEnergy = c => !isBasicEnergy(c) && !c.variant;
 const basicPool = CARDS.filter(c => STARTER_SETS.has(c.set) && notEnergy(c));
 // 超電突圍中原本就收錄於環境包的卡
 const SV8_META = ['SV8-034', 'SV8-035', 'SV8-036', 'SV8-095', 'SV8-102', 'SV8-103', 'SV8-104', 'SV8-105', 'SV8-106'];
@@ -14,6 +14,9 @@ const metaPool = CARDS.filter(c => ((!STARTER_SETS.has(c.set) && c.set !== 'SV8'
 const sv8Pool = CARDS.filter(c => c.set === 'SV8' && notEnergy(c));
 const sv8aPool = CARDS.filter(c => c.set === 'SV8a' && notEnergy(c));
 const exPool = CARDS.filter(c => notEnergy(c) && (c.rarity !== 'C'));
+// 特別版（插畫/全圖/金卡）：效果與一般版相同，低機率取代卡包中的一張卡
+const variantPool = set => CARDS.filter(c => c.variant && (!set || c.set === set));
+const VARIANT_WEIGHT = { AR: 0.6, SR: 0.28, SAR: 0.1, UR: 0.02 };
 
 export const PACKS = [
   {
@@ -39,31 +42,37 @@ export const PACKS = [
   {
     id: 'sv8',
     name: '超電突圍 擴充包',
-    desc: '台灣官方擴充包「超電突圍」(SV8) 全卡收錄：皮卡丘ex、請假王ex、三首惡龍ex、噬沙堡爺ex、米立龍ex等。',
+    desc: '台灣官方擴充包「超電突圍」(SV8) 全卡收錄：皮卡丘ex、請假王ex、三首惡龍ex、噬沙堡爺ex、米立龍ex等。約 15% 機率開出特別插畫版（AR／SR／SAR／UR）。',
     price: 250,
     size: 5,
     color: '#f2b705',
     pool: sv8Pool,
+    variants: variantPool('SV8'),
+    variantRate: 0.15,
     slots: [{ C: 1 }, { C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { R: 0.6, RR: 0.33, ACE: 0.07 }],
   },
   {
     id: 'sv8a',
     name: '太晶慶典 強化擴充包',
-    desc: '台灣官方強化擴充包「太晶慶典」(SV8a)：伊布家族ex、太樂巴戈斯ex、月月熊 赫月ex、各種古代／未來寶可夢與ACE SPEC。',
+    desc: '台灣官方強化擴充包「太晶慶典」(SV8a)：伊布家族ex、太樂巴戈斯ex、月月熊 赫月ex、各種古代／未來寶可夢與ACE SPEC。約 20% 機率開出特別插畫版。',
     price: 350,
     size: 5,
     color: '#39c5d8',
     pool: sv8aPool,
+    variants: variantPool('SV8a'),
+    variantRate: 0.2,
     slots: [{ C: 1 }, { C: 0.6, U: 0.4 }, { U: 1 }, { U: 0.6, R: 0.4 }, { RR: 0.8, ACE: 0.2 }],
   },
   {
     id: 'ex',
     name: '寶可夢ex 特選包',
-    desc: '每包保證1張寶可夢ex（RR以上），其他4張為U以上的稀有卡。',
+    desc: '每包保證1張寶可夢ex（RR以上），其他4張為U以上的稀有卡。約 12% 機率開出特別插畫版。',
     price: 600,
     size: 5,
     color: '#d4a017',
     pool: exPool,
+    variants: variantPool(),
+    variantRate: 0.12,
     slots: [{ U: 1 }, { U: 0.7, R: 0.3 }, { U: 0.5, R: 0.5 }, { R: 0.8, ACE: 0.2 }, { RR: 0.9, SR: 0.1 }],
   },
 ];
@@ -93,8 +102,21 @@ export function openPack(packId) {
     taken.add(c.id);
     return c;
   });
+  // 特別版：取代第4張卡
+  if (pack.variants?.length && Math.random() < pack.variantRate) {
+    const weight = Object.fromEntries(Object.entries(VARIANT_WEIGHT).filter(([k]) => pack.variants.some(c => c.rarity === k)));
+    const sum = Object.values(weight).reduce((a, b) => a + b, 0);
+    for (const k in weight) weight[k] /= sum;
+    const rar = rollRarity(weight);
+    const cands = pack.variants.filter(c => c.rarity === rar);
+    cards[3] = cands[Math.floor(Math.random() * cands.length)];
+  }
   addCards(cards.map(c => c.id));
   return cards;
 }
 
-export const RARITY_LABEL = { C: 'C', U: 'U', R: 'R', RR: 'RR', SR: 'SR', ACE: 'ACE SPEC' };
+export const RARITY_LABEL = { C: 'C', U: 'U', R: 'R', RR: 'RR', SR: 'SR', ACE: 'ACE SPEC', AR: 'AR', SAR: 'SAR', UR: 'UR' };
+// 稀有度由低到高（用於排序與開包演出）
+export const RARITY_RANK = { C: 0, U: 1, R: 2, ACE: 3, RR: 4, AR: 5, SR: 6, SAR: 7, UR: 8 };
+// 閃卡：RR 以上與 ACE SPEC
+export const isHolo = c => (RARITY_RANK[c.rarity] || 0) >= 3;
