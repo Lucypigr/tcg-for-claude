@@ -33,11 +33,102 @@ function fresh() {
   };
 }
 
+// ================= 多存檔 =================
+// 存檔清單存在 INDEX_KEY；第1個存檔沿用舊的 KEY（相容舊版），其他存檔為 KEY#id
+const INDEX_KEY = 'ptcg-ai-battle-slots';
+export const MAX_SLOTS = 8;
+const slotKey = id => (id === 's1' ? KEY : `${KEY}#${id}`);
+let index = null;
+function loadIndex() {
+  if (index) return index;
+  try { index = JSON.parse(localStorage.getItem(INDEX_KEY)); } catch { index = null; }
+  if (!index?.slots?.length) index = { active: 's1', slots: [{ id: 's1', name: '存檔 1', created: Date.now(), updated: Date.now() }] };
+  if (!index.slots.some(x => x.id === index.active)) index.active = index.slots[0].id;
+  return index;
+}
+function saveIndex() { try { localStorage.setItem(INDEX_KEY, JSON.stringify(index)); } catch { /* ignore */ } }
+function readSlot(id) {
+  try { const raw = localStorage.getItem(slotKey(id)); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+function newId() { let i = 1; while (loadIndex().slots.some(x => x.id === `s${i}`)) i++; return `s${i}`; }
+
+export function activeSlot() { const ix = loadIndex(); return ix.slots.find(x => x.id === ix.active); }
+// 所有存檔與摘要（金幣、收藏種類、勝場、已開卡包）
+export function listSlots() {
+  const ix = loadIndex();
+  return ix.slots.map(x => {
+    const d = x.id === ix.active ? load() : readSlot(x.id);
+    const st = d?.stats || {};
+    return {
+      ...x, active: x.id === ix.active, empty: !d,
+      coins: d?.coins ?? 500,
+      cards: d ? Object.values(d.collection || {}).filter(n => n > 0).length : 0,
+      wins: Object.values(st).reduce((a, r) => a + (r?.[0] || 0), 0),
+      losses: Object.values(st).reduce((a, r) => a + (r?.[1] || 0), 0),
+      packs: d?.packsOpened || 0,
+    };
+  });
+}
+export function switchSlot(id) {
+  const ix = loadIndex();
+  if (!ix.slots.some(x => x.id === id)) return;
+  if (state) save();
+  ix.active = id; saveIndex();
+  state = null;
+  return load();
+}
+function addSlot(name, data) {
+  const ix = loadIndex();
+  if (ix.slots.length >= MAX_SLOTS) return null;
+  const id = newId();
+  ix.slots.push({ id, name: name || `存檔 ${ix.slots.length + 1}`, created: Date.now(), updated: Date.now() });
+  try { localStorage.setItem(slotKey(id), JSON.stringify(data)); } catch { ix.slots.pop(); return null; }
+  saveIndex();
+  return id;
+}
+export function createSlot(name) {
+  const d = fresh();
+  d.seenIntro = true;
+  const id = addSlot(name, d);
+  if (id) switchSlot(id);
+  return id;
+}
+export function duplicateSlot(id) {
+  const src = id === loadIndex().active ? load() : readSlot(id);
+  const name = loadIndex().slots.find(x => x.id === id)?.name || '存檔';
+  return src ? addSlot(`${name}（複製）`, JSON.parse(JSON.stringify(src))) : null;
+}
+export function renameSlot(id, name) {
+  const x = loadIndex().slots.find(y => y.id === id);
+  if (x && name.trim()) { x.name = name.trim().slice(0, 20); saveIndex(); }
+}
+export function deleteSlot(id) {
+  const ix = loadIndex();
+  if (ix.slots.length <= 1) return false;
+  ix.slots = ix.slots.filter(x => x.id !== id);
+  try { localStorage.removeItem(slotKey(id)); } catch { /* ignore */ }
+  if (ix.active === id) { ix.active = ix.slots[0].id; state = null; }
+  saveIndex();
+  return true;
+}
+// 匯出／匯入存檔檔案（換裝置或備份用）
+export function exportSlot(id) {
+  const d = id === loadIndex().active ? load() : readSlot(id);
+  const name = loadIndex().slots.find(x => x.id === id)?.name || '存檔';
+  return JSON.stringify({ app: 'ptcg-ai-battle', version: 1, name, exported: new Date().toISOString(), data: d || fresh() });
+}
+export function importSlot(text) {
+  const j = JSON.parse(text);
+  const d = j?.app === 'ptcg-ai-battle' ? j.data : j;
+  if (!d || typeof d.coins !== 'number' || typeof d.collection !== 'object') throw new Error('不是有效的存檔檔案');
+  return addSlot(j.name ? `${j.name}（匯入）` : '匯入的存檔', d);
+}
+
 let state = null;
 export function load() {
   if (state) return state;
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(slotKey(loadIndex().active));
     state = raw ? { ...fresh(), granted: [], ...JSON.parse(raw) } : fresh();
   } catch {
     state = fresh();
@@ -67,7 +158,10 @@ function migrate(s) {
 }
 
 export function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* 無法存檔時忽略 */ }
+  if (!state) return;
+  try { localStorage.setItem(slotKey(loadIndex().active), JSON.stringify(state)); } catch { /* 無法存檔時忽略 */ }
+  const x = activeSlot();
+  if (x) { x.updated = Date.now(); saveIndex(); }
 }
 export function reset() {
   state = fresh();

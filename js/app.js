@@ -21,11 +21,11 @@ const LEVELS = [
 
 function header(active = '') {
   const s = store.load();
-  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '收藏'], ['tutorial', '教學'], ['rules', '規則']];
+  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '收藏'], ['tutorial', '教學'], ['saves', '存檔'], ['rules', '規則']];
   return `<header class="top">
     <div class="logo" data-go="home"><span class="ball"></span>寶可夢卡牌 <b>AI對戰</b></div>
     <nav>${nav.map(([id, n]) => `<button class="nav ${active === id ? 'on' : ''}" data-go="${id}">${n}</button>`).join('')}</nav>
-    <div class="coins" title="金幣">🪙 <b>${s.coins}</b></div>
+    <div class="coins" title="目前存檔：${esc(store.activeSlot()?.name || '')}" data-go="saves"><span class="slot-name">💾 ${esc(store.activeSlot()?.name || '')}</span>🪙 <b>${s.coins}</b></div>
   </header>`;
 }
 
@@ -40,7 +40,7 @@ app.addEventListener('click', e => {
 });
 
 export function route(name, arg) {
-  ({ home, setup, decks, shop, collection, rules, tutorial, edit: editDeck })[name]?.(arg);
+  ({ home, setup, decks, shop, collection, rules, tutorial, saves, edit: editDeck })[name]?.(arg);
 }
 
 // ================= 主選單 =================
@@ -83,6 +83,93 @@ function home() {
       buttons: [{ label: '之後再說', value: false }, { label: '📖 開始新手教學', primary: true, value: true }],
     }).then(v => { if (v) tutorial(); });
   }
+}
+
+// ================= 存檔 =================
+function fmtTime(t) {
+  if (!t) return '－';
+  const d = new Date(t);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+async function askName(title, value) {
+  const v = await showModal(`<h3>${esc(title)}</h3><input class="deck-name slot-input" id="slot-name" maxlength="20" value="${esc(value)}">`, {
+    buttons: [{ label: '取消', value: null }, { label: '確定', primary: true, value: 'ok' }],
+  });
+  return v === 'ok' ? (document.querySelector('#slot-name')?.value || value).trim() : null;
+}
+function saves() {
+  const list = store.listSlots();
+  const full = list.length >= store.MAX_SLOTS;
+  mount(`<h2>存檔</h2>
+    <p class="sub">遊戲會自動儲存到「使用中」的存檔。每個存檔有各自的金幣、收藏、牌組與戰績，最多 ${store.MAX_SLOTS} 個。</p>
+    <div class="save-actions">
+      <button class="btn primary" id="slot-new" ${full ? 'disabled' : ''}>＋ 新增存檔</button>
+      <button class="btn" id="slot-import" ${full ? 'disabled' : ''}>📥 匯入存檔檔案</button>
+      <input type="file" id="slot-file" accept=".json,application/json" hidden>
+    </div>
+    <div class="save-list">${list.map(x => `<div class="save-card ${x.active ? 'on' : ''}">
+      <div class="save-head"><b>${esc(x.name)}</b>${x.active ? '<span class="tag">使用中</span>' : ''}</div>
+      <div class="save-stats">
+        <span>🪙 ${x.coins}</span><span>🃏 ${x.cards} 種卡</span><span>🏆 ${x.wins} 勝 ${x.losses} 敗</span><span>🎴 ${x.packs} 包</span>
+      </div>
+      <div class="save-time">最後遊玩：${fmtTime(x.updated)}</div>
+      <div class="save-btns">
+        ${x.active ? '' : `<button class="btn tiny primary" data-slot-load="${x.id}">載入</button>`}
+        <button class="btn tiny" data-slot-rename="${x.id}">重新命名</button>
+        <button class="btn tiny" data-slot-copy="${x.id}" ${full ? 'disabled' : ''}>複製</button>
+        <button class="btn tiny" data-slot-export="${x.id}">匯出</button>
+        ${list.length > 1 ? `<button class="btn tiny danger" data-slot-del="${x.id}">刪除</button>` : ''}
+      </div></div>`).join('')}</div>
+    <p class="sub">💡 「匯出」會下載一個存檔檔案，可以在其他電腦或手機用「匯入存檔檔案」繼續玩，也可以當作備份。</p>`, 'saves');
+  const name = id => list.find(x => x.id === id)?.name || '';
+  app.querySelector('#slot-new').onclick = async () => {
+    const n = await askName('新存檔名稱', `存檔 ${list.length + 1}`);
+    if (n === null) return;
+    store.createSlot(n);
+    toast(`已建立並切換到「${n}」`, 'good');
+    saves();
+  };
+  const file = app.querySelector('#slot-file');
+  app.querySelector('#slot-import').onclick = () => file.click();
+  file.onchange = async () => {
+    const f = file.files[0];
+    if (!f) return;
+    try {
+      const id = store.importSlot(await f.text());
+      if (!id) throw new Error('存檔數量已達上限');
+      toast('匯入成功！', 'good');
+    } catch (e) { toast(`匯入失敗：${e.message}`, 'bad', 2500); }
+    saves();
+  };
+  app.querySelectorAll('[data-slot-load]').forEach(b => b.onclick = () => {
+    store.switchSlot(b.dataset.slotLoad);
+    toast(`已載入「${name(b.dataset.slotLoad)}」`, 'good');
+    saves();
+  });
+  app.querySelectorAll('[data-slot-rename]').forEach(b => b.onclick = async () => {
+    const n = await askName('重新命名存檔', name(b.dataset.slotRename));
+    if (n) { store.renameSlot(b.dataset.slotRename, n); saves(); }
+  });
+  app.querySelectorAll('[data-slot-copy]').forEach(b => b.onclick = () => {
+    if (store.duplicateSlot(b.dataset.slotCopy)) toast('已複製存檔', 'good');
+    saves();
+  });
+  app.querySelectorAll('[data-slot-export]').forEach(b => b.onclick = () => {
+    const blob = new Blob([store.exportSlot(b.dataset.slotExport)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const d = new Date();
+    a.download = `ptcg-save-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${b.dataset.slotExport}.json`;
+    toast(`已匯出「${name(b.dataset.slotExport)}」`, 'good');
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  app.querySelectorAll('[data-slot-del]').forEach(b => b.onclick = async () => {
+    const ok = await showModal(`<p>確定要刪除「${esc(name(b.dataset.slotDel))}」嗎？這個存檔的金幣、收藏與牌組都會消失，無法復原。</p>`, { buttons: [{ label: '取消', value: false }, { label: '刪除', danger: true, value: true }] });
+    if (!ok) return;
+    store.deleteSlot(b.dataset.slotDel);
+    saves();
+  });
 }
 
 // ================= 新手教學 =================
@@ -576,10 +663,10 @@ function rules() {
     <h3>關於卡片資料</h3>
     <p class="sub">卡片名稱與效果文字取自繁體中文版卡片資料（tcgdex 卡片資料庫 data-asia）。以「ex初階牌組 皮卡丘」(SVQP) 為起始牌組藍本，AI牌組參考2026年標準賽制主流牌組；超級進化系列卡片依日文版內容翻譯。卡圖取自寶可夢集換式卡牌官方訓練家網站（台灣）。本作為玩家自製的非官方同人遊戲。</p>
     <p><button class="btn primary" data-go="tutorial">📖 開啟新手教學（圖解＋練習賽）</button></p>
-    <div class="danger-zone"><button class="btn danger" id="reset">重置存檔</button></div>
+    <div class="danger-zone"><button class="btn danger" id="reset">重置目前存檔</button></div>
   </div>`, 'rules');
   app.querySelector('#reset').onclick = async () => {
-    const ok = await showModal('<p>確定要重置所有存檔（金幣、收藏、牌組、戰績）嗎？</p>', { buttons: [{ label: '取消', value: false }, { label: '重置', danger: true, value: true }] });
+    const ok = await showModal(`<p>確定要重置目前的存檔「${esc(store.activeSlot()?.name || '')}」（金幣、收藏、牌組、戰績）嗎？其他存檔不受影響。</p>`, { buttons: [{ label: '取消', value: false }, { label: '重置', danger: true, value: true }] });
     if (ok) { store.reset(); home(); }
   };
 }
