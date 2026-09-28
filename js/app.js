@@ -8,6 +8,7 @@ import { cardHTML, miniCardHTML, esc, energyIcon, getShowImages, setShowImages }
 import { showModal, toast } from './ui/modal.js';
 import { BattleView } from './ui/battle.js';
 import { showRulesSlides, TUTORIAL_BATTLE } from './ui/tutorial.js';
+import { TIERS, tierOf, makeOpponent, pointsDelta, RANK_REWARD } from './ranked.js';
 
 // 商店卡包封面卡
 const PACK_COVER = { basic: 'SVC-001', meta: 'SV6-081', sv8: 'SV8-033', sv8a: 'SV8a-136', m3: 'M3-046', ex: 'SV1S-028' };
@@ -21,7 +22,7 @@ const LEVELS = [
 
 function header(active = '') {
   const s = store.load();
-  const nav = [['home', '主選單'], ['setup', '對戰'], ['decks', '牌組'], ['shop', '商店'], ['collection', '圖鑑'], ['tutorial', '教學'], ['saves', '存檔'], ['rules', '規則']];
+  const nav = [['home', '主選單'], ['setup', '對戰'], ['ranked', '排位'], ['decks', '牌組'], ['shop', '商店'], ['collection', '圖鑑'], ['tutorial', '教學'], ['saves', '存檔'], ['rules', '規則']];
   return `<header class="top">
     <div class="logo" data-go="home"><span class="ball"></span>寶可夢卡牌 <b>AI對戰</b></div>
     <nav>${nav.map(([id, n]) => `<button class="nav ${active === id ? 'on' : ''}" data-go="${id}">${n}</button>`).join('')}</nav>
@@ -40,7 +41,7 @@ app.addEventListener('click', e => {
 });
 
 export function route(name, arg) {
-  ({ home, setup, decks, shop, collection, rules, tutorial, saves, edit: editDeck })[name]?.(arg);
+  ({ home, setup, ranked, decks, shop, collection, rules, tutorial, saves, edit: editDeck })[name]?.(arg);
 }
 
 // ================= 主選單 =================
@@ -56,6 +57,7 @@ function home() {
         <p>用「ex初階牌組 皮卡丘 (SVQP)」等繁體中文版卡片組成牌組，挑戰使用環境主流牌組的AI訓練家！打贏對戰賺取金幣，到商店購買卡包擴充收藏，自由組出你的最強牌組。</p>
         <div class="hero-btns">
           <button class="btn big primary" data-go="setup">⚔ 開始對戰</button>
+          <button class="btn big ranked-btn" data-go="ranked">🌐 排位對戰</button>
           <button class="btn big" data-go="shop">🛒 商店</button>
           <button class="btn big" data-go="decks">🃏 牌組編輯</button>
           <button class="btn big tutorial-btn" data-go="tutorial">📖 新手教學${s.tutorialDone ? '' : ' <span class="tag new-tag">NEW</span>'}</button>
@@ -258,6 +260,119 @@ async function battle(deck, level) {
     await showModal(`<p>對戰發生錯誤：${esc(e.message)}</p>`);
     route('home');
   }
+}
+
+// ================= 排位對戰 =================
+function rankBadge(pts) {
+  const t = tierOf(pts);
+  return `<span class="rank-badge" style="--rc:${t.color}">${t.icon} ${esc(t.name)}</span>`;
+}
+function ranked() {
+  const s = store.load();
+  const r = store.rankedData();
+  const decks = store.allDecks();
+  const deckOk = d => !validateDeck(d.cards).length && !store.missingCards(d).length;
+  let deckId = decks.find(d => d.id === s.lastDeck) ? s.lastDeck : decks[0].id;
+  const t = tierOf(r.pts);
+  const next = TIERS[TIERS.indexOf(t) + 1];
+  const render = () => {
+    mount(`<h2>排位對戰</h2>
+      <div class="rank-panel" style="--rc:${t.color}">
+        <div class="rank-icon">${t.icon}</div>
+        <div class="rank-main"><div class="rank-name">${esc(t.name)}</div>
+          <div class="rank-pts"><b>${r.pts}</b> 分${next ? `<small>・距離「${esc(next.name)}」還差 ${next.min - r.pts} 分</small>` : '<small>・最高牌位！</small>'}</div>
+          ${next ? `<div class="progress thin"><div style="width:${(r.pts - t.min) / (next.min - t.min) * 100}%"></div></div>` : ''}
+        </div>
+        <div class="rank-rec"><div>${r.wins} 勝 ${r.losses} 敗</div><div>${r.streak > 1 ? `🔥 ${r.streak} 連勝` : r.streak < -1 ? `${-r.streak} 連敗` : ''}</div><small>最高 ${r.best} 分</small></div>
+      </div>
+      <p class="sub">和其他訓練家隨機配對！對手的強度與牌組都不會事先告訴你，牌位越高，遇到高手的機會越大。勝利 🪙${RANK_REWARD.win}・落敗 🪙${RANK_REWARD.lose}，連勝可獲得額外積分。</p>
+      <div class="tier-row">${TIERS.map(x => `<span class="tier ${x === t ? 'on' : ''}" style="--rc:${x.color}">${x.icon} ${esc(x.name)}<small>${x.min}+</small></span>`).join('')}</div>
+      <h3>選擇你的牌組</h3>
+      <div class="deck-row">${decks.map(d => {
+        const ok = deckOk(d);
+        return `<div class="deck-tile ${deckId === d.id ? 'on' : ''} ${ok ? '' : 'bad'}" data-deck="${d.id}">
+          <div class="deck-cover">${d.cover ? cardHTML(d.cover, { small: true }) : ''}</div>
+          <div><b>${esc(d.name)}</b>${d.preset ? '<span class="tag">起始牌組</span>' : ''}<p>${ok ? `${Object.values(d.cards).reduce((a, b) => a + b, 0)}張` : '牌組不完整或卡片不足'}</p></div></div>`;
+      }).join('')}</div>
+      <div class="start-row"><button class="btn big primary" id="match">🌐 開始配對</button></div>`, 'ranked');
+    app.querySelectorAll('[data-deck]').forEach(el => el.onclick = () => { deckId = el.dataset.deck; render(); });
+    app.querySelector('#match').onclick = () => {
+      const d = store.getDeck(deckId);
+      if (!deckOk(d)) { toast('這副牌組無法使用，請先到牌組編輯修正', 'bad'); return; }
+      s.lastDeck = deckId; store.save();
+      matchmaking(d);
+    };
+  };
+  render();
+}
+
+// 配對畫面：等待數秒後「找到」對手
+function matchmaking(deck) {
+  const r = store.rankedData();
+  const opp = makeOpponent(r.pts);
+  const wait = 2500 + Math.random() * 5000;
+  const wrap = document.createElement('div');
+  wrap.className = 'match-stage';
+  wrap.innerHTML = `<div class="match-box">
+      <div class="match-ball"></div>
+      <div class="match-title">尋找對手中…</div>
+      <div class="match-time">00:00</div>
+      <div class="match-info">${rankBadge(r.pts)}・${r.pts} 分・${esc(deck.name)}</div>
+      <button class="btn" id="match-cancel">取消</button>
+    </div>`;
+  document.body.appendChild(wrap);
+  const t0 = Date.now();
+  let cancelled = false;
+  const timer = setInterval(() => {
+    const sec = Math.floor((Date.now() - t0) / 1000);
+    wrap.querySelector('.match-time').textContent = `00:${String(sec).padStart(2, '0')}`;
+  }, 250);
+  const close = () => { clearInterval(timer); wrap.classList.add('closing'); setTimeout(() => wrap.remove(), 250); };
+  wrap.querySelector('#match-cancel').onclick = () => { cancelled = true; close(); };
+  setTimeout(() => {
+    if (cancelled) return;
+    clearInterval(timer);
+    wrap.querySelector('.match-box').innerHTML = `<div class="match-found">配對成功！</div>
+      <div class="match-opp">
+        <div class="match-avatar">${opp.avatar}</div>
+        <div><div class="match-name">${esc(opp.name)}</div>
+          <div>${rankBadge(opp.pts)} <small>${opp.pts} 分</small></div>
+          <small class="sub">${opp.games} 場・勝率 ${opp.winRate}%</small></div>
+      </div>
+      <div class="match-loading">連線中…</div>`;
+    setTimeout(() => { if (cancelled) return; close(); rankedBattle(deck, opp); }, 2200);
+  }, wait);
+}
+
+async function rankedBattle(deck, opp) {
+  app.innerHTML = '<div id="battle-root"></div>';
+  const view = new BattleView(app.querySelector('#battle-root'), {
+    playerDeck: deck, aiDeck: opp.deck, level: opp.level, opponent: opp,
+    onEnd: async (won, reason) => {
+      const r = store.rankedData();
+      const delta = pointsDelta(won, r.streak);
+      const coins = won ? RANK_REWARD.win : RANK_REWARD.lose;
+      const beforeTier = tierOf(r.pts);
+      const res = store.recordRanked(won, delta, coins);
+      const afterTier = tierOf(res.after);
+      const up = TIERS.indexOf(afterTier) > TIERS.indexOf(beforeTier);
+      const down = TIERS.indexOf(afterTier) < TIERS.indexOf(beforeTier);
+      await new Promise(x => setTimeout(x, 1200));
+      const v = await showModal(`<div class="result ${won ? 'win' : 'lose'}">
+        <div class="result-title">${won ? '🏆 勝利！' : '落敗…'}</div>
+        <p>${esc(reason)}</p>
+        <p class="sub">對手：${opp.avatar} ${esc(opp.name)}・使用牌組「${esc(opp.deck.name)}」</p>
+        <div class="rank-change ${delta >= 0 ? 'plus' : 'minus'}">${rankBadge(res.after)} <b>${res.after}</b> 分 <span>${delta >= 0 ? '+' : ''}${res.after - res.before}</span></div>
+        ${up ? `<p class="rank-up">⬆ 晉級到「${esc(afterTier.name)}」！</p>` : down ? `<p class="rank-down">⬇ 降級到「${esc(afterTier.name)}」</p>` : ''}
+        <p class="result-coins">獲得 🪙 <b>${coins}</b> 金幣</p></div>`, {
+        dismissable: false,
+        buttons: [{ label: '返回', value: 'ranked' }, { label: '前往商店', value: 'shop' }, { label: '繼續配對', primary: true, value: 'again' }],
+      });
+      if (v === 'again') matchmaking(deck);
+      else route(v);
+    },
+  });
+  try { await view.start(); } catch (e) { console.error(e); await showModal(`<p>對戰發生錯誤：${esc(e.message)}</p>`); route('home'); }
 }
 
 // ================= 商店 =================

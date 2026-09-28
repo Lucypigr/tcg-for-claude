@@ -191,6 +191,22 @@ export function spend(n) {
   save();
   return true;
 }
+// 排位對戰紀錄
+export function rankedData() {
+  const s = load();
+  s.ranked ||= { pts: 0, wins: 0, losses: 0, streak: 0, best: 0 };
+  return s.ranked;
+}
+export function recordRanked(won, delta, coins) {
+  const r = rankedData();
+  const before = r.pts;
+  r.pts = Math.max(0, r.pts + delta);
+  if (won) { r.wins++; r.streak = Math.max(0, r.streak) + 1; } else { r.losses++; r.streak = Math.min(0, r.streak) - 1; }
+  r.best = Math.max(r.best, r.pts);
+  load().coins += coins;
+  save();
+  return { before, after: r.pts };
+}
 export function recordResult(level, won) {
   const s = load();
   const r = REWARDS[level];

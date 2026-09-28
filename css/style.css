@@ -740,3 +740,47 @@ nav::-webkit-scrollbar { display: none; }
 /* 圖鑑卡片很多：畫面外的卡片略過排版與繪製 */
 .dex-item { content-visibility: auto; contain-intrinsic-size: 150px 210px; }
 .dex-sec .card-grid { contain: layout; }
+
+/* ===== 排位對戰 ===== */
+.rank-panel { display: flex; align-items: center; gap: 18px; background: linear-gradient(120deg, color-mix(in srgb, var(--rc) 25%, var(--panel)), var(--panel)); border: 1px solid var(--rc); border-radius: 16px; padding: 16px 20px; margin: 10px 0; flex-wrap: wrap; }
+.rank-icon { font-size: 54px; filter: drop-shadow(0 0 12px var(--rc)); }
+.rank-main { flex: 1; min-width: 200px; }
+.rank-name { font-size: 26px; font-weight: 900; color: var(--rc); }
+.rank-pts b { font-size: 22px; }
+.rank-pts small { color: var(--muted); }
+.rank-rec { text-align: right; font-weight: 700; }
+.rank-rec small { color: var(--muted); font-weight: 500; }
+.rank-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; border: 1px solid var(--rc); color: var(--rc); font-weight: 700; font-size: 13px; background: rgba(0, 0, 0, .25); }
+.tier-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
+.tier { padding: 4px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; display: flex; gap: 6px; align-items: center; opacity: .7; }
+.tier small { color: var(--muted); }
+.tier.on { border-color: var(--rc); opacity: 1; box-shadow: 0 0 10px color-mix(in srgb, var(--rc) 50%, transparent); }
+.ranked-btn { background: linear-gradient(90deg, #4d8cff, #c77dff); color: #fff; border: none; }
+.match-stage { position: fixed; inset: 0; z-index: 800; background: radial-gradient(circle at 50% 40%, rgba(40, 60, 130, .95), rgba(5, 8, 20, .97)); display: flex; align-items: center; justify-content: center; animation: fade-in .2s; padding: 16px; }
+.match-stage.closing { opacity: 0; transition: opacity .25s; }
+.match-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.match-ball { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(#e8413c 0 46%, #111 46% 54%, #fff 54%); border: 4px solid #111; position: relative; animation: match-spin 1.1s linear infinite; box-shadow: 0 0 30px rgba(77, 140, 255, .6); }
+.match-ball::after { content: ''; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px; border-radius: 50%; background: #fff; border: 4px solid #111; }
+@keyframes match-spin { to { transform: rotate(360deg); } }
+.match-title { font-size: 22px; font-weight: 900; }
+.match-title::after { content: ''; animation: dots 1.5s steps(4) infinite; }
+.match-time { font-size: 30px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
+.match-info { color: #cdd5f3; font-size: 14px; }
+.match-found { font-size: 30px; font-weight: 900; color: var(--accent); animation: pop .4s cubic-bezier(.2, .8, .3, 1.4); }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+.match-opp { display: flex; align-items: center; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 20px; text-align: left; animation: pop .5s .15s backwards; }
+.match-avatar { font-size: 48px; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .08); border-radius: 50%; }
+.match-name { font-size: 20px; font-weight: 900; }
+.match-loading { color: var(--muted); }
+.vs-avatar { font-size: 44px; }
+.vs-rank { color: var(--rc); font-weight: 700; font-size: 14px; }
+.vs-deck.secret { letter-spacing: 2px; color: var(--muted); }
+.emote-bubble { position: fixed; top: 64px; left: 16px; z-index: 150; display: flex; align-items: center; gap: 8px; background: #fff; color: #111; font-weight: 700; padding: 8px 14px; border-radius: 18px 18px 18px 4px; box-shadow: 0 6px 20px rgba(0, 0, 0, .45); animation: pop .3s cubic-bezier(.2, .8, .3, 1.4); max-width: 70vw; }
+.emote-bubble.out { opacity: 0; transform: translateY(-8px); transition: all .4s; }
+.emote-avatar { font-size: 22px; }
+.rank-change { font-size: 18px; margin: 10px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.rank-change span { font-weight: 900; }
+.rank-change.plus span { color: #7fe39a; }
+.rank-change.minus span { color: #ff7b7b; }
+.rank-up { color: var(--accent); font-weight: 900; font-size: 18px; }
+.rank-down { color: #ff7b7b; font-weight: 700; }

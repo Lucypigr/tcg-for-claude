@@ -8,6 +8,7 @@ import { cardHTML, miniCardHTML, slotHTML, energyIcon, esc } from './cardview.js
 import { showModal, toast } from './modal.js';
 import { FX } from './fx.js';
 import { Coach, TUTORIAL_STEPS } from './tutorial.js';
+import { emote } from '../ranked.js';
 
 const LEVEL_NAME = { easy: '簡單', normal: '普通', hard: '困難' };
 
@@ -33,8 +34,9 @@ class HumanController {
 
 // ================= 對戰畫面 =================
 export class BattleView {
-  constructor(root, { playerDeck, aiDeck, level, playerName = '你', onEnd, tutorial = null }) {
+  constructor(root, { playerDeck, aiDeck, level, playerName = '你', onEnd, tutorial = null, opponent = null }) {
     this.tutorial = tutorial;
+    this.opponent = opponent; // 排位對戰：假裝成其他玩家的 AI
     this.playerList = deckToList(playerDeck.cards);
     this.root = root;
     this.level = level;
@@ -45,7 +47,7 @@ export class BattleView {
     const l0 = deckToList(playerDeck.cards);
     const l1 = deckToList(aiDeck.cards);
     this.ai = new AIController(level, l1);
-    this.ai.delay = 700;
+    this.ai.delay = opponent?.thinkDelay ?? 700;
     // AI 等待特效播放完畢再行動
     this.fxBusy = 0;
     this.ai.wait = async () => {
@@ -54,7 +56,7 @@ export class BattleView {
     };
     this.game = new Game({
       decks: [l0, l1],
-      names: [playerName, aiDeck.trainer],
+      names: [playerName, opponent?.name ?? aiDeck.trainer],
       controllers: [this.human, this.ai],
       seed: Math.floor(Math.random() * 2 ** 31),
       onEvent: e => this.onEvent(e),
@@ -76,6 +78,7 @@ export class BattleView {
   }
 
   introModal() {
+    if (this.opponent) return this.rankedIntro();
     return new Promise(resolve => {
       const d = this.aiDeck;
       showModal(`<div class="intro">
@@ -89,6 +92,33 @@ export class BattleView {
         <p class="vs-desc">${esc(d.desc)}</p>
       </div>`, { buttons: [{ label: '開始！', primary: true, value: true }], dismissable: false }).then(resolve);
     });
+  }
+
+  rankedIntro() {
+    const o = this.opponent;
+    return showModal(`<div class="intro ranked-intro">
+        <div class="vs-title">排位對戰</div>
+        <div class="vs-row">
+          <div class="vs-side"><div class="vs-avatar">🧑</div><div class="vs-label">你</div><div class="vs-deck">${esc(this.playerDeck.name)}</div></div>
+          <div class="vs-mid">VS</div>
+          <div class="vs-side"><div class="vs-avatar">${o.avatar}</div><div class="vs-label">${esc(o.name)}</div>
+            <div class="vs-rank" style="--rc:${o.tier.color}">${o.tier.icon} ${esc(o.tier.name)}・${o.pts}分</div>
+            <div class="vs-deck secret">牌組：？？？</div></div>
+        </div>
+        <p class="vs-desc">對手的牌組要等對戰開始後才會知道。祝你好運！</p>
+      </div>`, { buttons: [{ label: '開始！', primary: true, value: true }], dismissable: false })
+      .then(() => { if (o.chatty) setTimeout(() => this.emote(emote('start')), 600); });
+  }
+  // 對手的表情訊息
+  emote(text) {
+    if (!this.opponent || !this.root.isConnected) return;
+    this.root.querySelector('.emote-bubble')?.remove();
+    const b = document.createElement('div');
+    b.className = 'emote-bubble';
+    b.innerHTML = `<span class="emote-avatar">${this.opponent.avatar}</span><span>${esc(text)}</span>`;
+    this.root.appendChild(b);
+    setTimeout(() => b.classList.add('out'), 2600);
+    setTimeout(() => b.remove(), 3000);
   }
 
   buildLayout() {
@@ -111,6 +141,7 @@ export class BattleView {
 
   onEvent(e) {
     this.coach?.onEvent(e);
+    if (this.opponent?.chatty && e.type === 'prize' && Math.random() < 0.45) setTimeout(() => this.emote(emote(e.player === 1 ? 'ko' : 'hurt')), 900);
     if (e.type === 'log') {
       const log = this.root.querySelector('#log');
       if (log) {
@@ -155,7 +186,7 @@ export class BattleView {
     const activeHTML = (p, owner) => slotHTML(g, p.active, { active: true, owner, highlight: p.active && (owner === 0 && targetIds.has(p.active.id) || this.choiceSlots?.has(p.active.id)) });
 
     this.root.querySelector('#opp-side').innerHTML = `
-      <div class="player-tag opp-tag">${esc(opp.name)} <small>${esc(this.aiDeck.name)}・${LEVEL_NAME[this.level]}</small></div>
+      <div class="player-tag opp-tag">${this.opponent ? `${this.opponent.avatar} ${esc(opp.name)} <small style="color:${this.opponent.tier.color}">${this.opponent.tier.icon}${esc(this.opponent.tier.name)}</small>` : `${esc(opp.name)} <small>${esc(this.aiDeck.name)}・${LEVEL_NAME[this.level]}</small>`}</div>
       ${pileHTML(opp, false)}${benchHTML(opp, 1)}<div class="active-row">${activeHTML(opp, 1)}</div>`;
     this.root.querySelector('#my-side').innerHTML = `
       <div class="active-row">${activeHTML(me, 0)}</div>${benchHTML(me, 0)}${pileHTML(me, true)}
@@ -500,9 +531,12 @@ export class BattleView {
   }
 
   gameOver(winner, reason) {
+    // 引擎以勝者角度描述；自己投降時改成「你投降了」
+    if (winner !== 0 && reason === '對手投降') reason = '你投降了';
     this.coach?.destroy();
     const won = winner === 0;
     setTimeout(() => this.fxr?.destroy(), 3000);
+    if (this.opponent) this.emote(emote(won ? 'lose' : 'win'));
     this.onEnd?.(won, reason);
   }
 }
