@@ -361,7 +361,7 @@ async function rankedBattle(deck, opp) {
       const v = await showModal(`<div class="result ${won ? 'win' : 'lose'}">
         <div class="result-title">${won ? '🏆 勝利！' : '落敗…'}</div>
         <p>${esc(reason)}</p>
-        <p class="sub">對手：${opp.avatar} ${esc(opp.name)}・使用牌組「${esc(opp.deck.name)}」</p>
+        <p class="sub">對手：${opp.avatar} ${esc(opp.name)}・使用牌組「${esc(opp.deck.name)}」</p>${opp.deck.cover ? `<div class="opp-deck-cover">${cardHTML(opp.deck.cover, { small: true })}</div>` : ''}
         <div class="rank-change ${delta >= 0 ? 'plus' : 'minus'}">${rankBadge(res.after)} <b>${res.after}</b> 分 <span>${delta >= 0 ? '+' : ''}${res.after - res.before}</span></div>
         ${up ? `<p class="rank-up">⬆ 晉級到「${esc(afterTier.name)}」！</p>` : down ? `<p class="rank-down">⬇ 降級到「${esc(afterTier.name)}」</p>` : ''}
         <p class="result-coins">獲得 🪙 <b>${coins}</b> 金幣</p></div>`, {

@@ -784,3 +784,4 @@ nav::-webkit-scrollbar { display: none; }
 .rank-change.minus span { color: #ff7b7b; }
 .rank-up { color: var(--accent); font-weight: 900; font-size: 18px; }
 .rank-down { color: #ff7b7b; font-weight: 700; }
+.opp-deck-cover { display: flex; justify-content: center; margin: 6px 0; } .opp-deck-cover .card { --w: 90px; }

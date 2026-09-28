@@ -9,6 +9,7 @@ import { showModal, toast } from './modal.js';
 import { FX } from './fx.js';
 import { Coach, TUTORIAL_STEPS } from './tutorial.js';
 import { emote } from '../ranked.js';
+const pick = a => a[Math.floor(Math.random() * a.length)];
 
 const LEVEL_NAME = { easy: '簡單', normal: '普通', hard: '困難' };
 
@@ -51,7 +52,10 @@ export class BattleView {
     // AI 等待特效播放完畢再行動
     this.fxBusy = 0;
     this.ai.wait = async () => {
-      const t = Math.max(this.ai.delay, this.fxBusy - performance.now() + 250);
+      // 排位對手：思考時間忽快忽慢，偶爾會想很久
+      let d = this.ai.delay;
+      if (opponent) d = d * (0.6 + Math.random() * 0.8) + (Math.random() < 0.06 ? 1500 + Math.random() * 2000 : 0);
+      const t = Math.max(d, this.fxBusy - performance.now() + 250);
       await new Promise(r => setTimeout(r, t));
     };
     this.game = new Game({
@@ -63,6 +67,7 @@ export class BattleView {
       firstPlayer: tutorial?.firstPlayer ?? null,
       stacks: tutorial?.stacks ?? null,
     });
+    if (opponent) this.humanize(opponent);
     this.mode = null; // { kind: 'target', actions, label }
     this.fx = [];
     this.renderQueued = false;
@@ -108,6 +113,26 @@ export class BattleView {
         <p class="vs-desc">對手的牌組要等對戰開始後才會知道。祝你好運！</p>
       </div>`, { buttons: [{ label: '開始！', primary: true, value: true }], dismissable: false })
       .then(() => { if (o.chatty) setTimeout(() => this.emote(emote('start')), 600); });
+  }
+  // 排位對手：大幅落後時可能投降（每個對手的耐性不同）
+  humanize(o) {
+    const orig = this.ai.chooseAction.bind(this.ai);
+    const quitter = Math.random() < 0.5 ? 0 : 0.1 + Math.random() * 0.25;
+    let checkedTurn = -1;
+    this.ai.chooseAction = async (g, actions) => {
+      if (quitter && g.turn !== checkedTurn) {
+        checkedTurn = g.turn;
+        const [me, ai] = g.players;
+        const behind = ai.prizes.length - me.prizes.length;
+        const hopeless = behind >= 3 || (me.prizes.length <= 1 && behind >= 1 && !ai.bench.length);
+        if (hopeless && Math.random() < quitter) {
+          this.emote(pick(['投了，GG', '打不過了 GG', 'GG 你太強了', '認輸～GG']));
+          await new Promise(r => setTimeout(r, 1600));
+          return { type: 'forfeit' };
+        }
+      }
+      return orig(g, actions);
+    };
   }
   // 對手的表情訊息
   emote(text) {
@@ -536,7 +561,7 @@ export class BattleView {
     this.coach?.destroy();
     const won = winner === 0;
     setTimeout(() => this.fxr?.destroy(), 3000);
-    if (this.opponent) this.emote(emote(won ? 'lose' : 'win'));
+    if (this.opponent && reason !== '對手投降') this.emote(emote(won ? 'lose' : 'win'));
     this.onEnd?.(won, reason);
   }
 }

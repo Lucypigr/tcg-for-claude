@@ -1,5 +1,7 @@
 // 排位對戰：假裝配對到其他玩家（實際上都是 AI，強度不一）
-import { AI_DECKS } from './data/decks.js';
+import { AI_DECKS, STARTER_DECKS } from './data/decks.js';
+import { CARDS } from './data/cards.js';
+import { validateDeck, ruleName, isBasicPokemon, BASIC_ENERGY_ID, CARD_MAP } from './engine/cards.js';
 
 // 牌位（依積分）
 export const TIERS = [
@@ -60,7 +62,7 @@ export function makeOpponent(myPts) {
     avatar: pick(AVATARS),
     tier: tierOf(pts),
     games, winRate: Math.round(rate * 100),
-    deck: pick(AI_DECKS),
+    deck: makeDeck(level, name),
     thinkDelay: { easy: 900, normal: 750, hard: 600 }[level] + Math.floor(Math.random() * 500),
     chatty: Math.random() < 0.75,
   };
@@ -69,4 +71,102 @@ export function makeOpponent(myPts) {
 export function pointsDelta(won, streak) {
   if (won) return 25 + Math.min(15, Math.max(0, streak) * 5);
   return -15;
+}
+
+// ================= 對手牌組 =================
+// 依對手強度混合：環境牌組、自己改過的環境牌組、起始牌組、亂組的牌
+const DECK_STYLE = {
+  easy: { starter: 0.35, messy: 0.4, tweaked: 0.15, meta: 0.1 },
+  normal: { starter: 0.1, messy: 0.15, tweaked: 0.35, meta: 0.4 },
+  hard: { tweaked: 0.25, meta: 0.75 },
+};
+const POOL = CARDS.filter(c => !c.variant && !(c.cat === 'E' && c.energy === 'basic'));
+const POKES = POOL.filter(c => c.cat === 'P' && !c.fossil);
+const TRAINERS = POOL.filter(c => c.cat !== 'P');
+const HOMEBREW = ['我的最愛', '亂組的', '隨便玩玩', '新手套牌改', '試作一號', '寶可夢大集合', '可愛就是正義', '抽到什麼放什麼', '週末用', '實驗中', '爸爸幫我組的', '能量很多'];
+const count = d => Object.values(d).reduce((a, b) => a + b, 0);
+function byName(d, c) { const n = ruleName(c); return Object.entries(d).reduce((k, [id, x]) => k + (ruleName(CARD_MAP.get(id)) === n ? x : 0), 0); }
+function addCard(d, c, n) {
+  if (c.ace) { if (Object.keys(d).some(id => CARD_MAP.get(id).ace)) return; n = 1; }
+  n = Math.min(n, 4 - byName(d, c));
+  if (n > 0) d[c.id] = (d[c.id] || 0) + n;
+}
+function lineOf(c) {
+  const line = [c];
+  let cur = c;
+  while (cur.stage > 0) { const prev = POKES.find(x => x.name === cur.from); if (!prev) break; line.unshift(prev); cur = prev; }
+  return line;
+}
+// 補滿或刪減到60張（優先動基本能量）
+function fixTo60(d, types) {
+  const et = [...types].filter(t => BASIC_ENERGY_ID[t]);
+  if (!et.length) et.push(pick(Object.keys(BASIC_ENERGY_ID)));
+  let i = 0;
+  while (count(d) < 60) { const id = BASIC_ENERGY_ID[et[i++ % et.length]]; d[id] = (d[id] || 0) + 1; }
+  while (count(d) > 60) {
+    const ids = Object.keys(d);
+    const k = ids.find(id => CARD_MAP.get(id).cat === 'E' && CARD_MAP.get(id).energy === 'basic' && d[id] > 3) || pick(ids.filter(id => !isBasicPokemon(CARD_MAP.get(id)) || d[id] > 1));
+    d[k]--; if (!d[k]) delete d[k];
+  }
+  return d;
+}
+// 亂組的牌：寶可夢種類很多、進化線不完整、訓練家隨便放、能量比例怪
+function messyDeck() {
+  const d = {};
+  const types = new Set();
+  const lines = 3 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < lines; i++) {
+    const line = lineOf(pick(POKES));
+    // 有時候少放進化前的寶可夢（不成形）
+    const broken = Math.random() < 0.3 && line.length > 1;
+    for (const [j, x] of line.entries()) {
+      if (broken && j === 0) continue;
+      addCard(d, x, 1 + Math.floor(Math.random() * 3));
+      types.add(x.type);
+    }
+  }
+  const nTrainers = 8 + Math.floor(Math.random() * 20);
+  for (let i = 0; i < nTrainers; i++) addCard(d, pick(TRAINERS), 1 + Math.floor(Math.random() * 2));
+  // 能量屬性有時會多放一種用不到的
+  if (Math.random() < 0.4) types.add(pick(Object.keys(BASIC_ENERGY_ID)));
+  return fixTo60(d, types);
+}
+// 改過的環境牌組：拿掉幾張，換成自己喜歡的卡
+function tweakedDeck(base) {
+  const d = { ...base.cards };
+  const swaps = 3 + Math.floor(Math.random() * 8);
+  const types = new Set(Object.keys(d).map(id => CARD_MAP.get(id)).filter(c => c.cat === 'P').map(c => c.type));
+  for (let i = 0; i < swaps; i++) {
+    const ids = Object.keys(d).filter(id => !isBasicPokemon(CARD_MAP.get(id)) || d[id] > 1);
+    const k = pick(ids);
+    d[k]--; if (!d[k]) delete d[k];
+  }
+  const want = count(base.cards) - count(d);
+  for (let i = 0; i < want * 2 && count(d) < 60; i++) {
+    const c = Math.random() < 0.5 ? pick(TRAINERS) : pick(POKES.filter(x => x.stage === 0 && (types.has(x.type) || Math.random() < 0.2)));
+    addCard(d, c, 1);
+  }
+  return fixTo60(d, types);
+}
+function makeDeck(level, owner) {
+  const style = roll(DECK_STYLE[level]);
+  let deck;
+  if (style === 'meta') deck = { ...pick(AI_DECKS) };
+  else if (style === 'starter') {
+    const b = pick(STARTER_DECKS);
+    deck = { ...b, name: Math.random() < 0.5 ? b.name : `${b.name}（改）`, cards: Math.random() < 0.5 ? b.cards : tweakedDeck(b) };
+  } else if (style === 'tweaked') {
+    const b = pick(AI_DECKS);
+    deck = { ...b, name: `${b.name.replace(/・.*/, '')}${pick(['（自改版）', '（改）', ' 我的版本', ' v2', '（實驗）'])}`, cards: tweakedDeck(b) };
+  } else {
+    let cards;
+    for (let i = 0; i < 20; i++) { cards = messyDeck(); if (!validateDeck(cards).length) break; }
+    const mons = Object.keys(cards).map(id => CARD_MAP.get(id)).filter(c => c.cat === 'P');
+    const star = mons.sort((a, b) => (b.ex ? 100 : 0) + b.hp - ((a.ex ? 100 : 0) + a.hp))[0];
+    deck = { name: `${owner}的${pick(HOMEBREW)}`, cards, cover: star?.id, desc: '' };
+  }
+  // 保險：不合法的話改用環境牌組
+  if (validateDeck(deck.cards).length) deck = { ...pick(AI_DECKS) };
+  deck.style = style;
+  return deck;
 }
