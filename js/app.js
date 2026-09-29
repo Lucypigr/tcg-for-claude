@@ -22,7 +22,7 @@ const LEVELS = [
 
 function header(active = '') {
   const s = store.load();
-  const nav = [['home', '主選單'], ['setup', '對戰'], ['ranked', '排位'], ['decks', '牌組'], ['shop', '商店'], ['collection', '圖鑑'], ['tutorial', '教學'], ['saves', '存檔'], ['rules', '規則']];
+  const nav = [['home', '主選單'], ['setup', '對戰'], ['ranked', '排位'], ['decks', '牌組'], ['shop', '商店'], ['collection', '圖鑑'], ['tutorial', '教學'], ['saves', '設定'], ['rules', '規則']];
   return `<header class="top">
     <div class="logo" data-go="home"><span class="ball"></span>寶可夢卡牌 <b>AI對戰</b></div>
     <nav>${nav.map(([id, n]) => `<button class="nav ${active === id ? 'on' : ''}" data-go="${id}">${n}</button>`).join('')}</nav>
@@ -102,7 +102,10 @@ async function askName(title, value) {
 function saves() {
   const list = store.listSlots();
   const full = list.length >= store.MAX_SLOTS;
-  mount(`<h2>存檔</h2>
+  mount(`<h2>設定</h2>
+    <div class="code-box"><h3>🎁 獎勵碼</h3>
+      <div class="code-row"><input class="deck-name" id="reward-code" placeholder="輸入獎勵碼" autocomplete="off"><button class="btn primary" id="redeem">兌換</button></div></div>
+    <h3>存檔</h3>
     <p class="sub">遊戲會自動儲存到「使用中」的存檔。每個存檔有各自的金幣、收藏、牌組與戰績，最多 ${store.MAX_SLOTS} 個。</p>
     <div class="save-actions">
       <button class="btn primary" id="slot-new" ${full ? 'disabled' : ''}>＋ 新增存檔</button>
@@ -124,6 +127,16 @@ function saves() {
       </div></div>`).join('')}</div>
     <p class="sub">💡 「匯出」會下載一個存檔檔案，可以在其他電腦或手機用「匯入存檔檔案」繼續玩，也可以當作備份。</p>`, 'saves');
   const name = id => list.find(x => x.id === id)?.name || '';
+  const codeInput = app.querySelector('#reward-code');
+  const redeem = () => {
+    const r = store.redeemCode(codeInput.value);
+    if (!r) { toast('無效的獎勵碼', 'bad'); return; }
+    toast(`兌換成功！獲得 🪙${r.coins.toLocaleString()} 金幣`, 'good', 2200);
+    codeInput.value = '';
+    saves();
+  };
+  app.querySelector('#redeem').onclick = redeem;
+  codeInput.onkeydown = e => { if (e.key === 'Enter') redeem(); };
   app.querySelector('#slot-new').onclick = async () => {
     const n = await askName('新存檔名稱', `存檔 ${list.length + 1}`);
     if (n === null) return;

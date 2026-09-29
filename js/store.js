@@ -271,3 +271,13 @@ export function sellExtras() {
   save();
   return { coins, count };
 }
+
+// 獎勵碼（可重複使用，不分大小寫）
+const REWARD_CODES = { yiho: { coins: 50000 } };
+export function redeemCode(code) {
+  const r = REWARD_CODES[String(code || '').trim().toLowerCase()];
+  if (!r) return null;
+  load().coins += r.coins;
+  save();
+  return r;
+}

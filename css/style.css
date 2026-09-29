@@ -785,3 +785,8 @@ nav::-webkit-scrollbar { display: none; }
 .rank-up { color: var(--accent); font-weight: 900; font-size: 18px; }
 .rank-down { color: #ff7b7b; font-weight: 700; }
 .opp-deck-cover { display: flex; justify-content: center; margin: 6px 0; } .opp-deck-cover .card { --w: 90px; }
+
+.code-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 10px 0 18px; max-width: 480px; }
+.code-box h3 { margin: 0 0 8px; }
+.code-row { display: flex; gap: 8px; }
+.code-row input { flex: 1; min-width: 0; }
