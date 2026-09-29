@@ -1,0 +1,13 @@
+{
+  "name": "tcg-for-claude",
+  "version": "1.0.0",
+  "description": "寶可夢集換式卡牌 AI 對戰（繁體中文）",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node test/unimplemented.mjs && node test/effects.mjs && node test/sim.mjs 1 normal && node test/fuzz.mjs 50",
+    "sim": "node test/sim.mjs",
+    "build:cards": "node tools/build-cards.mjs"
+  }
+}
